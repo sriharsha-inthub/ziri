@@ -1,0 +1,30 @@
+{
+  "name": "ziri",
+  "version": "0.1.1",
+  "description": "Ziri — AI code context CLI (per-repo stores, streaming embeddings, multi-repo registry)",
+  "type": "module",
+  "bin": {
+    "ziri": "bin/ziri.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "bundledDependencies": [
+    "yaml",
+    "minimist",
+    "toml"
+  ],
+  "scripts": {
+    "test": "vitest",
+    "postinstall": "node -e \"console.log('✅ ziri installed. Run `ziri --help`.')\""
+  },
+  "dependencies": {
+    "faiss-node": "^0.5.1",
+    "minimist": "^1.2.8",
+    "toml": "^3.0.0",
+    "yaml": "^2.4.2"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

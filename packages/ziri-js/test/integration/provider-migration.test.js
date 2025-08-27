@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { IndexManager } from '../../lib/index/index-manager.js';
+import { RepositoryManager } from '../../lib/repository/repository-manager.js';
 import { ConfigManager } from '../../lib/config/config-manager.js';
 import { ProviderSwitcher } from '../../lib/config/provider-switcher.js';
 
@@ -24,7 +24,7 @@ describe('Provider Switching and Data Migration Tests', () => {
     await fs.mkdir(ziriConfigDir, { recursive: true });
     
     configManager = new ConfigManager(ziriConfigDir);
-    indexManager = new IndexManager(configManager);
+    indexManager = new RepositoryManager(ziriConfigDir);
     providerSwitcher = new ProviderSwitcher(configManager, indexManager);
     
     // Create test repository
@@ -96,8 +96,14 @@ describe('Provider Switching and Data Migration Tests', () => {
     it('should handle provider switching configuration', async () => {
       // Configure multiple providers
       await configManager.updateConfig({
-        defaultProvider: 'openai',
+        defaultProvider: 'ollama',
         providers: {
+          ollama: {
+            type: 'ollama',
+            model: 'nomic-embed-text',
+            dimensions: 768,
+            baseUrl: 'http://localhost:11434'
+          },
           openai: {
             type: 'openai',
             model: 'text-embedding-3-small',
@@ -128,10 +134,16 @@ describe('Provider Switching and Data Migration Tests', () => {
     let repositoryId;
 
     beforeEach(async () => {
-      // Initial setup with OpenAI provider
+      // Initial setup with Ollama provider
       await configManager.updateConfig({
-        defaultProvider: 'openai',
+        defaultProvider: 'ollama',
         providers: {
+          ollama: {
+            type: 'ollama',
+            model: 'nomic-embed-text',
+            dimensions: 768,
+            baseUrl: 'http://localhost:11434'
+          },
           openai: {
             type: 'openai',
             model: 'text-embedding-3-small',

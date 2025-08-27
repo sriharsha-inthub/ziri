@@ -40,8 +40,8 @@ describe('Memory Integration', () => {
     });
     
     // Create change detector with metadata manager
-    const { MetadataManager } = await import('../lib/repository/metadata-manager.js');
-    const { StorageManager } = await import('../lib/storage/storage-manager.js');
+    const { MetadataManager } = await import('../../lib/repository/metadata-manager.js');
+    const { StorageManager } = await import('../../lib/storage/storage-manager.js');
     const storageManager = new StorageManager(tempDir);
     const metadataManager = new MetadataManager(storageManager);
     const changeDetector = new ChangeDetector(testRepoDir, metadataManager);

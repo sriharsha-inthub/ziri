@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { IndexManager } from '../../lib/index/index-manager.js';
+import { RepositoryManager } from '../../lib/repository/repository-manager.js';
 import { ConfigManager } from '../../lib/config/config-manager.js';
 import { ProgressMonitor } from '../../lib/progress/progress-monitor.js';
 import { ProjectSummarizer } from '../../lib/summarizer/project-summarizer.js';
@@ -29,32 +29,32 @@ describe('Requirements Validation Tests', () => {
     
     // Initialize components
     configManager = new ConfigManager(ziriConfigDir);
-    indexManager = new IndexManager(configManager);
+    indexManager = new RepositoryManager(ziriConfigDir);
     progressMonitor = new ProgressMonitor();
     projectSummarizer = new ProjectSummarizer();
     benchmarkSuite = new PerformanceBenchmarkSuite();
     
     // Configure for testing
-    await configManager.updateConfig({
-      defaultProvider: 'openai',
-      providers: {
-        openai: {
-          type: 'openai',
-          model: 'text-embedding-3-small',
-          dimensions: 1536,
-          maxTokens: 8191,
-          rateLimit: {
-            requestsPerMinute: 3000,
-            tokensPerMinute: 1000000
-          }
+    const config = await configManager.loadConfig();
+    config.defaultProvider = 'ollama';
+    config.providers = {
+      ollama: {
+        type: 'openai',
+        model: 'text-embedding-3-small',
+        dimensions: 1536,
+        maxTokens: 8191,
+        rateLimit: {
+          requestsPerMinute: 3000,
+          tokensPerMinute: 1000000
         }
-      },
-      performance: {
-        concurrency: 3,
-        batchSize: 100,
-        memoryLimit: 512 * 1024 * 1024
       }
-    });
+    };
+    config.performance = {
+      concurrency: 3,
+      batchSize: 100,
+      memoryLimit: 512 * 1024 * 1024
+    };
+    await configManager.saveConfig(config);
   });
 
   afterAll(async () => {

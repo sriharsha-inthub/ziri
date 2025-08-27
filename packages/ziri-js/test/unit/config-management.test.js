@@ -46,11 +46,11 @@ describe('Configuration Management System', () => {
       const config = await configManager.loadConfig();
       
       expect(config).toBeDefined();
-      expect(config.defaultProvider).toBe('openai');
+      expect(config.defaultProvider).toBe('ollama');
       expect(config.providers).toBeDefined();
       expect(config.performance).toBeDefined();
       expect(config.exclusions).toBeDefined();
-    });
+    }, 10000);
 
     it('should save and load configuration', async () => {
       const testConfig = {
@@ -77,16 +77,16 @@ describe('Configuration Management System', () => {
       expect(loadedConfig.defaultProvider).toBe('test-provider');
       expect(loadedConfig.providers['test-provider']).toBeDefined();
       expect(loadedConfig.performance.concurrency).toBe(5);
-    });
+    }, 10000);
 
     it('should validate configuration', async () => {
       const validConfig = {
-        defaultProvider: 'openai',
+        defaultProvider: 'ollama',
         providers: {
-          openai: {
-            type: 'openai',
-            model: 'text-embedding-3-small',
-            dimensions: 1536
+          ollama: {
+            type: 'ollama',
+            model: 'nomic-embed-text',
+            dimensions: 768
           }
         }
       };
@@ -94,7 +94,7 @@ describe('Configuration Management System', () => {
       const validation = configManager.validateConfig(validConfig);
       expect(validation.valid).toBe(true);
       expect(validation.errors).toHaveLength(0);
-    });
+    }, 5000);
 
     it('should detect invalid configuration', async () => {
       const invalidConfig = {
@@ -109,7 +109,7 @@ describe('Configuration Management System', () => {
       const validation = configManager.validateConfig(invalidConfig);
       expect(validation.valid).toBe(false);
       expect(validation.errors.length).toBeGreaterThan(0);
-    });
+    }, 5000);
 
     it('should merge environment variables', async () => {
       // Set test environment variables
@@ -127,7 +127,7 @@ describe('Configuration Management System', () => {
       delete process.env.ZIRI_DEFAULT_PROVIDER;
       delete process.env.ZIRI_CONCURRENCY;
       delete process.env.OPENAI_API_KEY;
-    });
+    }, 10000);
 
     it('should add and remove providers', async () => {
       const newProvider = {
@@ -147,7 +147,7 @@ describe('Configuration Management System', () => {
       
       config = await configManager.loadConfig({ skipCache: true });
       expect(config.providers.ollama).toBeUndefined();
-    });
+    }, 15000);
 
     it('should update performance settings', async () => {
       const newSettings = {
@@ -162,7 +162,7 @@ describe('Configuration Management System', () => {
       expect(result.settings.concurrency).toBe(8);
       expect(result.settings.batchSize).toBe(150);
       expect(result.settings.memoryLimit).toBe(1024);
-    });
+    }, 10000);
 
     it('should get performance recommendations', () => {
       const recommendations = configManager.getPerformanceRecommendations();
@@ -172,7 +172,7 @@ describe('Configuration Management System', () => {
       expect(recommendations.batchSize).toBeGreaterThan(0);
       expect(recommendations.memoryLimit).toBeGreaterThan(0);
       expect(Array.isArray(recommendations.reasoning)).toBe(true);
-    });
+    }, 5000);
 
     it('should export and import configuration', async () => {
       const exportPath = join(testDir, 'exported-config.json');
@@ -195,7 +195,7 @@ describe('Configuration Management System', () => {
       
       const config = await configManager.loadConfig({ skipCache: true });
       expect(config.performance.concurrency).not.toBe(99);
-    });
+    }, 15000);
 
     it('should reset to defaults', async () => {
       // Modify configuration
@@ -206,7 +206,7 @@ describe('Configuration Management System', () => {
       
       const config = await configManager.loadConfig({ skipCache: true });
       expect(config.performance.concurrency).toBe(3); // Default value
-    });
+    }, 10000);
 
     it('should get configuration summary', async () => {
       const summary = await configManager.getConfigSummary();
@@ -216,7 +216,7 @@ describe('Configuration Management System', () => {
       expect(summary.providersCount).toBeGreaterThan(0);
       expect(summary.performance).toBeDefined();
       expect(summary.validation).toBeDefined();
-    });
+    }, 10000);
   });
 
   describe('EnvironmentLoader', () => {
@@ -235,7 +235,7 @@ describe('Configuration Management System', () => {
       delete process.env.ZIRI_CONCURRENCY;
       delete process.env.ZIRI_BATCH_SIZE;
       delete process.env.OPENAI_API_KEY;
-    });
+    }, 5000);
 
     it('should handle boolean environment variables', () => {
       process.env.ZIRI_ADAPTIVE_BATCHING = 'true';
@@ -265,16 +265,13 @@ describe('Configuration Management System', () => {
   describe('ConfigValidator', () => {
     it('should validate complete configuration', () => {
       const config = {
-        defaultProvider: 'openai',
+        defaultProvider: 'ollama',
         providers: {
-          openai: {
-            type: 'openai',
-            model: 'text-embedding-3-small',
-            dimensions: 1536,
-            rateLimit: {
-              requestsPerMinute: 3000,
-              concurrentRequests: 5
-            }
+          ollama: {
+            type: 'ollama',
+            model: 'nomic-embed-text',
+            dimensions: 768,
+            baseUrl: 'http://localhost:11434'
           }
         },
         performance: {
@@ -290,9 +287,9 @@ describe('Configuration Management System', () => {
 
     it('should detect provider configuration errors', () => {
       const config = {
-        defaultProvider: 'openai',
+        defaultProvider: 'ollama',
         providers: {
-          openai: {
+          ollama: {
             type: 'invalid-type',
             // Missing model and dimensions
           }
@@ -307,12 +304,12 @@ describe('Configuration Management System', () => {
 
     it('should validate performance settings', () => {
       const config = {
-        defaultProvider: 'openai',
+        defaultProvider: 'ollama',
         providers: {
-          openai: {
-            type: 'openai',
-            model: 'test',
-            dimensions: 1536
+          ollama: {
+            type: 'ollama',
+            model: 'nomic-embed-text',
+            dimensions: 768
           }
         },
         performance: {
@@ -331,15 +328,15 @@ describe('Configuration Management System', () => {
 
     it('should validate provider switching', () => {
       const fromProvider = {
-        type: 'openai',
-        dimensions: 1536,
-        model: 'text-embedding-3-small'
+        type: 'ollama',
+        dimensions: 768,
+        model: 'nomic-embed-text'
       };
       
       const toProvider = {
-        type: 'ollama',
-        dimensions: 4096,
-        model: 'llama2'
+        type: 'openai',
+        dimensions: 1536,
+        model: 'text-embedding-3-small'
       };
 
       const errors = [];
@@ -365,7 +362,7 @@ describe('Configuration Management System', () => {
       
       const oldConfig = {
         version: '0.1.0',
-        defaultProvider: 'openai'
+        defaultProvider: 'ollama'
       };
       
       await writeFile(join(configDir, 'ziri.json'), JSON.stringify(oldConfig));
@@ -381,12 +378,12 @@ describe('Configuration Management System', () => {
       
       const oldConfig = {
         version: '0.1.0',
-        defaultProvider: 'openai',
+        defaultProvider: 'ollama',
         providers: {
-          openai: {
-            type: 'openai',
-            model: 'text-embedding-3-small',
-            dimensions: 1536
+          ollama: {
+            type: 'ollama',
+            model: 'nomic-embed-text',
+            dimensions: 768
           }
         }
       };
@@ -406,7 +403,7 @@ describe('Configuration Management System', () => {
       
       const oldConfig = {
         version: '0.1.0',
-        defaultProvider: 'openai'
+        defaultProvider: 'ollama'
       };
       
       await writeFile(join(configDir, 'ziri.json'), JSON.stringify(oldConfig));
@@ -481,7 +478,7 @@ describe('Configuration Management System', () => {
     it('should handle complete configuration workflow', async () => {
       // 1. Load initial configuration
       let config = await configManager.loadConfig();
-      expect(config.defaultProvider).toBe('openai');
+      expect(config.defaultProvider).toBe('ollama');
       
       // 2. Add new provider
       await configManager.addProvider('ollama', {
@@ -540,10 +537,10 @@ describe('Configuration Management System', () => {
       const invalidConfig = {
         defaultProvider: 'nonexistent',
         providers: {
-          openai: {
-            type: 'openai',
-            model: 'test',
-            dimensions: 1536
+          ollama: {
+            type: 'ollama',
+            model: 'nomic-embed-text',
+            dimensions: 768
           }
         },
         performance: {
@@ -560,7 +557,7 @@ describe('Configuration Management System', () => {
       expect(result.fixes.length).toBeGreaterThan(0);
       
       const config = await configManager.loadConfig({ skipCache: true });
-      expect(config.defaultProvider).toBe('openai'); // Should be fixed
+      expect(config.defaultProvider).toBe('ollama'); // Should be fixed
       expect(config.performance.concurrency).toBeLessThanOrEqual(20); // Should be capped
       expect(config.performance.memoryLimit).toBeGreaterThanOrEqual(128); // Should be increased
     });

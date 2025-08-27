@@ -1,0 +1,45 @@
+{
+  "content": "function test() { return \"hello\"; }",
+  "filePath": "/test/file.js",
+  "relativePath": "file.js",
+  "startLine": 1,
+  "endLine": 1,
+  "language": "javascript",
+  "type": "function",
+  "functionName": "test",
+  "className": null,
+  "imports": [],
+  "functions": [
+    {
+      "name": "test",
+      "params": "",
+      "signature": "function test() {",
+      "type": "declaration",
+      "async": false
+    },
+    {
+      "name": "test",
+      "params": "",
+      "signature": "test() {",
+      "type": "method",
+      "async": false
+    }
+  ],
+  "classes": [],
+  "comments": [],
+  "docstrings": [],
+  "signature": "function test() {",
+  "surroundingContext": {
+    "before": [],
+    "after": []
+  },
+  "metadata": {
+    "fileType": ".js",
+    "size": 35,
+    "tokenCount": 9,
+    "functionCount": 2,
+    "classCount": 0,
+    "importCount": 0,
+    "commentCount": 0
+  }
+}

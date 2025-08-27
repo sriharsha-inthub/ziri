@@ -569,3 +569,8 @@ node internal/validation/validate-project-structure.js
 ---
 
 **Universal Principle**: This project prioritizes user experience and maintainability. Every change should make the project easier to use and understand, not more complex. When in doubt, choose the path that helps users succeed faster.
+
+ npm test --workspace=packages/ziri-js -- --run --reporter=verbose
+ npm run test:passing --workspace=packages/ziri-js
+ npm publish --workspace=packages/ziri-js --dry-run
+ npm publish --workspace=packages/ziri-js

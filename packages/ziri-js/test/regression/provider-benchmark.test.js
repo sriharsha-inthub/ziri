@@ -10,6 +10,13 @@ import {
 } from '../../lib/embedding/provider-benchmark.js';
 import { ProviderFactory } from '../../lib/embedding/provider-factory.js';
 
+// Mock the ProviderFactory
+vi.mock('../../lib/embedding/provider-factory.js', () => ({
+  ProviderFactory: {
+    createProvider: vi.fn()
+  }
+}));
+
 // Mock provider for testing
 class MockProvider {
   constructor(config = {}) {

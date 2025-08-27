@@ -49,23 +49,23 @@ describe('BaseEmbeddingProvider', () => {
     expect(provider.model).toBe('test-model');
     expect(provider.dimensions).toBe(768);
     expect(provider.maxTokens).toBe(1000);
-  });
+  }, 5000);
 
   it('should validate configuration correctly', () => {
     expect(() => provider.validateConfig()).not.toThrow();
-  });
+  }, 5000);
 
   it('should throw error for missing required config', () => {
     const invalidProvider = new BaseEmbeddingProvider({});
     expect(() => invalidProvider.validateConfig()).toThrow();
-  });
+  }, 5000);
 
   it('should estimate tokens correctly', () => {
     const text = 'Hello world';
     const tokens = provider.estimateTokens(text);
     expect(tokens).toBeGreaterThan(0);
     expect(typeof tokens).toBe('number');
-  });
+  }, 5000);
 
   it('should return correct limits', () => {
     const limits = provider.getLimits();
@@ -288,8 +288,15 @@ describe('EmbeddingClient', () => {
 
   beforeEach(() => {
     const config = {
-      defaultProvider: 'openai',
+      defaultProvider: 'ollama',
       providers: {
+        ollama: {
+          type: 'ollama',
+          baseUrl: 'http://localhost:11434',
+          model: 'nomic-embed-text',
+          dimensions: 768,
+          enabled: true
+        },
         openai: {
           type: 'openai',
           apiKey: 'test-key',
@@ -318,7 +325,8 @@ describe('EmbeddingClient', () => {
   });
 
   it('should initialize with configuration', () => {
-    expect(client.defaultProvider).toBe('openai');
+    expect(client.defaultProvider).toBe('ollama');
+    expect(client.getAvailableProviders()).toContain('ollama');
     expect(client.getAvailableProviders()).toContain('openai');
   });
 

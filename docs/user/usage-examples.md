@@ -4,23 +4,42 @@ This document provides practical examples of using Ziri for various scenarios an
 
 ## Getting Started
 
-### First-Time Setup
+### First-Time Setup with Ollama (Recommended)
 
 ```bash
 # Install Ziri
 npm install -g ziri
 
-# Check system health
+# Install Ollama (https://ollama.ai/download)
+# Pull required models
+ollama pull nomic-embed-text && ollama pull llama3.2
+
+# Check system health and Ollama status
 ziri doctor
 
-# Configure your preferred embedding provider
-ziri config provider openai --api-key sk-your-openai-key
-
-# Index your first repository
+# Index your first repository with enhanced context
 cd /path/to/your/project
 ziri index
 
-# Try your first query
+# Try your first query (shows code snippets!)
+ziri query "authentication logic"
+
+# Try the new chat feature
+ziri chat "how does authentication work in this project?"
+```
+
+### Alternative Setup with Cloud Providers
+
+```bash
+# Install Ziri
+npm install -g ziri
+
+# Configure cloud provider
+ziri config provider openai --api-key sk-your-openai-key
+
+# Index and query
+cd /path/to/your/project
+ziri index
 ziri query "authentication logic"
 ```
 
@@ -39,15 +58,20 @@ ziri config provider openai \
   --base-url https://api.openai.com/v1
 ```
 
-### Ollama (Local) Configuration
+### Ollama (Local) Configuration - Default Provider
 
 ```bash
-# Basic Ollama setup (assumes Ollama is running locally)
+# Basic Ollama setup (automatic if Ollama is running)
 ziri config provider ollama
 
 # Custom Ollama setup
 ziri config provider ollama \
   --base-url http://localhost:11434 \
+  --model nomic-embed-text
+
+# Verify Ollama models for chat functionality
+ollama list
+ollama pull llama3.2  # If not already installed
   --model nomic-embed-text
 
 # Remote Ollama instance
@@ -118,11 +142,98 @@ ziri index --concurrency 2 --batch-size 25 --memory-limit 256
 ### Monorepo Indexing
 
 ```bash
-# Index entire monorepo
+# Index entire monorepo with enhanced context
 ziri index --verbose --stats
 
 # Index with custom exclusions
 ziri index --exclude "node_modules,dist,build,.next,coverage"
+
+# Force full re-index with enhanced context
+ziri index --force --verbose
+```
+
+## AI Chat Examples (NEW)
+
+### Understanding Your Codebase
+
+```bash
+# Get architectural overview
+ziri chat "what are the main components of this system?"
+
+# Understand data flow
+ziri chat "how does data flow through the application?"
+
+# Learn about patterns
+ziri chat "what design patterns are used in this codebase?"
+
+# Understand dependencies
+ziri chat "what are the key dependencies and how are they used?"
+```
+
+### Debugging and Troubleshooting
+
+```bash
+# Debug authentication issues
+ziri chat "why might user login be failing?"
+
+# Understand error handling
+ziri chat "how does this application handle errors?"
+
+# Database connection issues
+ziri chat "what could cause database connection problems?"
+
+# Performance bottlenecks
+ziri chat "where might performance bottlenecks occur?"
+```
+
+### Code Exploration
+
+```bash
+# Find specific functionality
+ziri chat "how is user registration implemented?"
+
+# Understand API structure
+ziri chat "what API endpoints are available and what do they do?"
+
+# Learn about configuration
+ziri chat "how is the application configured?"
+
+# Security analysis
+ziri chat "what security measures are implemented?"
+```
+
+### Development Guidance
+
+```bash
+# Adding new features
+ziri chat "how would I add a new user role to this system?"
+
+# Testing strategies
+ziri chat "what testing approaches are used here?"
+
+# Deployment process
+ziri chat "how is this application deployed?"
+
+# Code quality
+ziri chat "what code quality standards are followed?"
+```
+
+### Scoped Chat Queries
+
+```bash
+# Focus on backend services
+ziri chat "how do the microservices communicate?" --scope set:backend
+
+# Frontend-specific questions
+ziri chat "what state management is used?" --scope set:frontend
+
+# Get more context for complex questions
+ziri chat "explain the entire user authentication flow" --k 15 --verbose
+
+# Repository-specific questions
+cd /path/to/specific/repo
+ziri chat "what is unique about this service?" --scope repo
+```
 
 # Force full re-index of monorepo
 ziri index --force --concurrency 8 --memory-limit 2048

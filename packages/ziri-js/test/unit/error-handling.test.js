@@ -256,7 +256,7 @@ describe('Provider Fallback Manager', () => {
   
   beforeEach(() => {
     mockClient = {
-      defaultProvider: 'openai',
+      defaultProvider: 'ollama',
       embed: vi.fn(),
       testProvider: vi.fn(),
       getAvailableProviders: vi.fn().mockReturnValue(['openai', 'ollama', 'huggingface'])
@@ -457,7 +457,7 @@ describe('Resilient Embedding Client', () => {
   
   beforeEach(() => {
     mockBaseClient = {
-      defaultProvider: 'openai',
+      defaultProvider: 'ollama',
       embed: vi.fn(),
       testProvider: vi.fn(),
       getAvailableProviders: vi.fn().mockReturnValue(['openai', 'ollama']),

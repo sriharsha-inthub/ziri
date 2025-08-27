@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { IndexManager } from '../../lib/index/index-manager.js';
+//import { IndexManager } from '../../lib/index/index-manager.js';
+import { RepositoryManager } from '../../lib/repository/repository-manager.js';
+
 import { ConfigManager } from '../../lib/config/config-manager.js';
 import { PerformanceBenchmarkSuite } from '../../lib/performance/performance-benchmark-suite.js';
 
@@ -26,7 +28,7 @@ describe('Comprehensive Integration Tests', () => {
     
     // Initialize components
     configManager = new ConfigManager(ziriConfigDir);
-    indexManager = new IndexManager(configManager);
+    indexManager = new RepositoryManager(ziriConfigDir);
     benchmarkSuite = new PerformanceBenchmarkSuite();
   });
 
@@ -55,10 +57,16 @@ describe('Comprehensive Integration Tests', () => {
       
       const startTime = Date.now();
       
-      // Configure for OpenAI provider (mock)
+      // Configure for Ollama provider (mock)
       await configManager.updateConfig({
-        defaultProvider: 'openai',
+        defaultProvider: 'ollama',
         providers: {
+          ollama: {
+            type: 'ollama',
+            model: 'nomic-embed-text',
+            dimensions: 768,
+            baseUrl: 'http://localhost:11434'
+          },
           openai: {
             type: 'openai',
             model: 'text-embedding-3-small',

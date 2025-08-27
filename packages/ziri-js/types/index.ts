@@ -10,6 +10,7 @@ export * from './interfaces/project-summarizer.js';
 // Data models and configuration schemas
 export * from './models/data-models.js';
 export * from './models/config-schemas.js';
+export * from './models/enhanced-storage.js';
 
 // Re-export commonly used types for convenience
 export type {
@@ -50,3 +51,9 @@ export type {
   PerformanceConfig,
   DEFAULT_CONFIG
 } from './models/config-schemas.js';
+
+export type {
+  EnhancedChunkData,
+  EnhancedQueryResult,
+  EnhancedIndexEntry
+} from './models/enhanced-storage.js';

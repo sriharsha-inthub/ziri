@@ -12,6 +12,7 @@ npm install -g ziri
 
 # Verify installation
 ziri --version
+ziri --help
 ziri doctor
 ```
 

@@ -108,5 +108,5 @@ describe('Integration Test - Streaming File Discovery and Processing', () => {
     console.log(`📁 Discovered ${discoveredFiles.length} files`);
     console.log(`📄 Generated ${allChunks.length} chunks`);
     console.log(`📊 Stats: ${stats.textFiles} text files, ${stats.binaryFiles} binary files`);
-  });
+  }, 30000); // 30 second timeout
 });

@@ -2,6 +2,7 @@
   "name": "ziri-monorepo",
   "version": "0.1.1",
   "description": "Ziri AI Code Context CLI - Monorepo",
+  "type": "module",
   "private": true,
   "scripts": {
     "validate:structure": "node internal/validation/validate-project-structure.js",

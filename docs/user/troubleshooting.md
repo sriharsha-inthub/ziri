@@ -7,7 +7,7 @@ This guide helps you diagnose and resolve common issues with Ziri. Most problems
 Before diving into specific issues, run these commands to get system information:
 
 ```bash
-# Check overall system health
+# Check overall system health and Ollama status
 ziri doctor
 
 # View current configuration
@@ -16,6 +16,9 @@ ziri config show
 # Check version and installation
 ziri --version
 ziri where
+
+# Test Ollama connection (default provider)
+curl http://localhost:11434/api/tags
 ```
 
 ## Installation Issues
@@ -73,10 +76,11 @@ npm install -g ziri
 
 ### Error: "Provider not configured"
 ```bash
-# Configure your preferred provider
-ziri config provider openai --api-key sk-your-key
-# or
+# Configure Ollama (default, recommended)
 ziri config provider ollama
+
+# Or configure cloud provider
+ziri config provider openai --api-key sk-your-key
 
 # Verify configuration
 ziri config show providers
@@ -204,14 +208,84 @@ ziri config set performance.retryDelay 2000
 ziri index --verbose
 ```
 
+## Chat Command Issues
+
+### Error: "Cannot connect to Ollama"
+```bash
+# Check if Ollama is running
+curl http://localhost:11434/api/tags
+
+# Start Ollama service
+ollama serve
+
+# Check if required models are installed
+ollama list
+
+# Pull required models
+ollama pull nomic-embed-text    # For embeddings
+ollama pull llama3.2           # For chat
+
+# Configure Ollama in Ziri
+ziri config provider ollama
+```
+
+### Error: "Chat command times out"
+```bash
+# Check Ollama model availability
+ollama list | grep llama3.2
+
+# Pull chat model if missing
+ollama pull llama3.2
+
+# Test Ollama directly
+curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2",
+  "prompt": "Hello",
+  "stream": false
+}'
+
+# Use verbose mode for debugging
+ziri chat "test question" --verbose
+```
+
+### Error: "No context found for chat"
+```bash
+# Ensure repository is indexed with enhanced context
+ziri index --force
+
+# Check if enhanced context is enabled (default)
+ziri config show indexing.enhancedContext
+
+# Try with more context results
+ziri chat "your question" --k 15
+
+# Check specific scope
+ziri chat "your question" --scope repo --verbose
+```
+
+### Chat responses are poor quality
+```bash
+# Ensure you're using a good chat model
+ollama pull llama3.2:latest
+
+# Try with more context
+ziri chat "your question" --k 12 --verbose
+
+# Re-index with enhanced context (should be default)
+ziri index --force
+
+# Check if repository has sufficient code content
+ziri query "test" --k 5
+```
+
 ## Query Issues
 
 ### Error: "No results found"
 ```bash
-# Check if repository is indexed
+# Check if repository is indexed with enhanced context
 ziri sources list
 
-# Re-index if needed
+# Re-index with enhanced context (default)
 ziri index --force
 
 # Try broader search terms
@@ -222,6 +296,9 @@ ziri query "search term" --k 20
 
 # Check all repositories
 ziri query "search term" --scope all
+
+# Verify enhanced context is working
+ziri query "test" --k 3  # Should show code snippets
 ```
 
 ### Error: "Query too slow"
@@ -268,23 +345,24 @@ ziri index --concurrency 2 --batch-size 25
 ziri config provider openai --model text-embedding-3-small
 ```
 
-### Ollama Issues
+### Ollama Issues (Default Provider)
 
 #### Error: "Cannot connect to Ollama"
 ```bash
 # Check if Ollama is running
 curl http://localhost:11434/api/tags
 
-# Start Ollama
+# Start Ollama service
 ollama serve
 
 # Check Ollama models
 ollama list
 
-# Pull embedding model if needed
-ollama pull nomic-embed-text
+# Pull required models for embeddings and chat
+ollama pull nomic-embed-text    # For indexing and queries
+ollama pull llama3.2           # For chat functionality
 
-# Configure custom Ollama URL
+# Configure custom Ollama URL if needed
 ziri config provider ollama --base-url http://localhost:11434
 ```
 
@@ -293,12 +371,33 @@ ziri config provider ollama --base-url http://localhost:11434
 # List available models
 ollama list
 
-# Pull required model
-ollama pull nomic-embed-text
-ollama pull all-minilm
+# Pull required models
+ollama pull nomic-embed-text    # Essential for embeddings
+ollama pull llama3.2           # Essential for chat
+ollama pull all-minilm         # Alternative embedding model
 
-# Configure specific model
+# Configure specific models
 ziri config provider ollama --model nomic-embed-text
+
+# Test model availability
+ollama run llama3.2 "Hello"
+```
+
+#### Ollama performance issues
+```bash
+# Check Ollama system resources
+ollama ps
+
+# Monitor Ollama logs
+ollama logs
+
+# Restart Ollama service
+ollama stop
+ollama serve
+
+# Use smaller models if needed
+ollama pull llama3.2:8b        # Smaller variant
+ollama pull nomic-embed-text   # Efficient embedding model
 ```
 
 ### Hugging Face Issues

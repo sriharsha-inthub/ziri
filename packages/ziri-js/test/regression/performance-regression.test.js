@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { IndexManager } from '../../lib/index/index-manager.js';
+import { RepositoryManager } from '../../lib/repository/repository-manager.js';
 import { ConfigManager } from '../../lib/config/config-manager.js';
 import { PerformanceBenchmarkSuite } from '../../lib/performance/performance-benchmark-suite.js';
 
@@ -21,7 +21,7 @@ describe('Performance Regression Tests', () => {
     await fs.mkdir(ziriConfigDir, { recursive: true });
     
     configManager = new ConfigManager(ziriConfigDir);
-    indexManager = new IndexManager(configManager);
+    indexManager = new RepositoryManager(ziriConfigDir);
     benchmarkSuite = new PerformanceBenchmarkSuite();
     
     // Load performance baselines (if they exist)
@@ -29,8 +29,14 @@ describe('Performance Regression Tests', () => {
     
     // Configure for consistent testing
     await configManager.updateConfig({
-      defaultProvider: 'openai',
+      defaultProvider: 'ollama',
       providers: {
+        ollama: {
+          type: 'ollama',
+          model: 'nomic-embed-text',
+          dimensions: 768,
+          baseUrl: 'http://localhost:11434'
+        },
         openai: {
           type: 'openai',
           model: 'text-embedding-3-small',

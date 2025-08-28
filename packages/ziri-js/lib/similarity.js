@@ -1,0 +1,2 @@
+export function cosineSim(a,b){ let dot=0,na=0,nb=0; for(let i=0;i<a.length;i++){ const x=a[i], y=b[i]; dot+=x*y; na+=x*x; nb+=y*y; } if(!na||!nb) return 0; return dot/(Math.sqrt(na)*Math.sqrt(nb)); }
+export class TopK{ constructor(k){ this.k=k; this.arr=[]; } push(it){ this.arr.push(it); this.arr.sort((x,y)=>y.score-x.score); if(this.arr.length>this.k) this.arr.length=this.k; } values(){ return this.arr; } }

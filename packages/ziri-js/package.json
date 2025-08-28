@@ -1,6 +1,6 @@
 {
   "name": "ziri",
-  "version": "0.1.10",
+  "version": "0.1.12",
   "description": "Ziri — AI code context CLI (per-repo stores, streaming embeddings, multi-repo registry)",
   "type": "module",
   "bin": {
@@ -24,7 +24,7 @@
     "prepublish": "npm run test:passing && npm run build",
     "test:passing": "vitest --run --reporter=verbose --exclude='**/comprehensive-integration.test.js' --exclude='**/provider-migration.test.js' --exclude='**/requirements-validation.test.js' --exclude='**/performance-regression.test.js' --exclude='**/repository-isolation.test.js' --exclude='**/embedding-pipeline.test.js' --exclude='**/provider-benchmark.test.js' --exclude='**/repository-parser.test.js' --exclude='**/file-walker.test.js' --exclude='**/memory-integration.test.js'",
     "publish:npm": "npm publish",
-    "postinstall": "node -e \"console.log('✅ ziri installed. Run `ziri --help`.')\""
+    "postinstall": "node -e \"console.log('✅ ziri installed. Run ziri --help.')\""
   },
   "files": [
     "bin/",

@@ -43,6 +43,8 @@ venv.bak/
 *.swp
 *.swo
 *~
+.kiro/**
+.kiro/
 .DS_Store
 Thumbs.db
 

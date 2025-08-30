@@ -1,6 +1,6 @@
 {
   "name": "ziri",
-  "version": "0.1.12",
+  "version": "0.1.15",
   "description": "Ziri — AI code context CLI (per-repo stores, streaming embeddings, multi-repo registry)",
   "type": "module",
   "bin": {
@@ -44,12 +44,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/ziri.git",
+    "url": "https://github.com/sriharsha-inthub/ziri.git",
     "directory": "packages/ziri-js"
   },
-  "homepage": "https://github.com/your-username/ziri#readme",
+  "homepage": "https://github.com/sriharsha-inthub/ziri#readme",
   "bugs": {
-    "url": "https://github.com/your-username/ziri/issues"
+    "url": "https://github.com/sriharsha-inthub/ziri/issues"
   },
   "keywords": [
     "ai",

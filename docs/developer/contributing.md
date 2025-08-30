@@ -27,7 +27,7 @@ Thank you for your interest in contributing to Ziri! This guide will help you ge
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/your-username/ziri.git
+   git clone https://github.com/sriharsha-inthub/ziri.git
    cd ziri
    ```
 

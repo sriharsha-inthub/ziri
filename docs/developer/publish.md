@@ -279,7 +279,7 @@ After successful publication:
 - **Current Version**: Check `package.json`
 - **Registry**: https://www.npmjs.com/package/ziri
 - **Installation**: `npm install -g ziri`
-- **Repository**: https://github.com/your-username/ziri
+- **Repository**: https://github.com/sriharsha-inthub/ziri
 
 ## Security Notes
 

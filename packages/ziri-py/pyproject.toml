@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ziri"
-version = "0.1.1"
+version = "0.2.0"
 description = "Ziri — Python shim that invokes the Node CLI (requires Node >=18)"
 authors = [{name="Ziri Team"}]
 readme = "README.md"

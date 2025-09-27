@@ -29,6 +29,7 @@ async function testOllamaDefault() {
       throw new Error(`Expected Ollama type to be 'ollama', got '${ollamaConfig.type}'`);
     }
     
+    // Updated expectations for nomic-embed-text
     if (ollamaConfig.model !== 'nomic-embed-text') {
       throw new Error(`Expected Ollama model to be 'nomic-embed-text', got '${ollamaConfig.model}'`);
     }
@@ -54,9 +55,9 @@ async function testOllamaDefault() {
     
     // Test 3: Check chat model configuration
     console.log('\n3️⃣ Testing chat model configuration...');
-    if (ollamaConfig.textModel && ollamaConfig.textModel !== 'llama3.2') {
-      console.log(`   ⚠️  Text model is '${ollamaConfig.textModel}', expected 'llama3.2'`);
-    } else if (ollamaConfig.textModel === 'llama3.2') {
+    if (ollamaConfig.textModel && ollamaConfig.textModel !== 'qwen2:1.5b') {
+      console.log(`   ⚠️  Text model is '${ollamaConfig.textModel}', expected 'qwen2:1.5b'`);
+    } else if (ollamaConfig.textModel === 'qwen2:1.5b') {
       console.log('   ✅ Chat model configured correctly');
     } else {
       console.log('   ℹ️  No specific text model configured (will use default)');

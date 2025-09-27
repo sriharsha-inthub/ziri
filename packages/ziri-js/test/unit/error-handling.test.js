@@ -158,8 +158,8 @@ describe('Error Handler', () => {
       
       expect(details.message).toContain('Authentication failed');
       expect(details.provider).toBe('openai');
-      expect(details.suggestions).toContain('Check your API key configuration');
-      expect(details.troubleshooting[0]).toContain('Verify your API key is set correctly');
+      expect(details.suggestions).toContain('Check your API key configuration with: ziri config show');
+      expect(details.troubleshooting[0]).toContain('Verify API key with: echo $OPENAI_API_KEY (or relevant env var)');
       expect(details.documentation).toBeDefined();
     });
 
@@ -169,8 +169,8 @@ describe('Error Handler', () => {
       
       const details = errorHandler.getDetailedErrorMessage(error, context);
       
-      expect(details.suggestions).toContain('Reduce batch size or concurrency level');
-      expect(details.suggestions).toContain('Consider upgrading to a higher tier API plan');
+      expect(details.suggestions).toContain('Reduce batch size or concurrency level to stay within rate limits');
+      expect(details.suggestions).toContain('Consider upgrading to a higher tier API plan for increased rate limits');
     });
 
     it('should provide troubleshooting steps for network errors', () => {
@@ -549,7 +549,7 @@ describe('Resilient Embedding Client', () => {
       expect(errorSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           error: expect.objectContaining({
-            suggestions: expect.arrayContaining(['Check your API key configuration'])
+            suggestions: expect.arrayContaining(['Check your API key configuration with: ziri config show'])
           }),
           textsCount: 1
         })

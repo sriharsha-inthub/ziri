@@ -27,7 +27,7 @@ pip install ziri
 ### Verify Installation
 ```bash
 ziri --version
-# Should show v0.1.1 or later
+# Should show v{{VERSION}} or later
 ```
 
 ## Step 2: Setup Ollama (Recommended - Free & Local)
@@ -162,6 +162,16 @@ ziri chat "explain the database connection pattern used here"
 ziri chat "how does error handling work?" --verbose
 ```
 
+### Automatic Re-indexing (NEW!)
+```bash
+# Keep your index current automatically during development
+ziri watch
+
+# In another terminal, make changes to your code
+# Ziri will automatically re-index changed files
+# Press Ctrl+C to stop watching
+```
+
 ## Step 6: Advanced Usage (Optional)
 
 ### Multi-Repository Setup
@@ -194,36 +204,32 @@ ziri config set performance.batchSize 100
 
 ## Common First-Time Issues
 
-### "Provider not configured"
-```bash
-# Make sure you've configured a provider
-ziri config provider openai --api-key sk-your-key
-# or
-ziri config provider ollama
-```
+> **NOTE:** Common first‑time issues are documented in the troubleshooting guide.
 
-### "API key invalid"
-```bash
-# Check your API key
-ziri config show
-# Update if needed
-ziri config provider openai --api-key sk-new-key
-```
+- See detailed troubleshooting steps: [troubleshooting.md](troubleshooting.md)
 
-### "Indexing too slow"
-```bash
-# Try local provider for faster indexing
-ziri config provider ollama
-ziri index
+## Enhanced Error Handling (NEW!)
 
-# Or optimize settings
-ziri index --concurrency 2 --batch-size 25
-```
+Ziri now provides enhanced error messages with recovery suggestions to help you resolve issues faster:
 
-### "Memory errors"
 ```bash
-# Reduce memory usage
-ziri index --memory-limit 256 --batch-size 20 --concurrency 2
+# Authentication error example
+ziri index --provider openai
+# If API key is invalid, you'll get clear suggestions:
+# 🔑 Authentication failed for provider openai
+# 💡 Recovery Suggestions:
+#   1. Check your API key configuration with: ziri config show
+#   2. Verify the API key has the correct permissions
+#   3. Try regenerating your API key from the provider dashboard
+
+# Rate limit error example
+ziri index --concurrency 10
+# If you hit rate limits, you'll get suggestions:
+# 🚨 Rate limit exceeded for provider openai
+# 💡 Recovery Suggestions:
+#   1. Reduce batch size or concurrency level
+#   2. Implement longer delays between requests
+#   3. Switch to a different embedding provider
 ```
 
 ## Next Steps

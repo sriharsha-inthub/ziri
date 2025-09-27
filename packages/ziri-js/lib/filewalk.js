@@ -112,3 +112,5 @@ export async function* walkDir(root){
   } 
   yield* walk(root);
 }
+
+export { EX, RX };

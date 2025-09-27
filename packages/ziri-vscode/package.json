@@ -1,0 +1,70 @@
+{
+  "name": "ziri-vscode",
+  "displayName": "Ziri Code Assistant",
+  "description": "AI-powered code context search and assistance for VS Code",
+  "version": "0.1.0",
+  "publisher": "ziri",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ziri.search",
+        "title": "Ziri: Search Codebase",
+        "category": "Ziri"
+      },
+      {
+        "command": "ziri.index",
+        "title": "Ziri: Index Current Repository",
+        "category": "Ziri"
+      },
+      {
+        "command": "ziri.chat",
+        "title": "Ziri: Chat with Code Assistant",
+        "category": "Ziri"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "ziriSearch",
+          "name": "Ziri Search",
+          "when": "ziri:enabled"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ziri",
+          "title": "Ziri",
+          "icon": "resources/ziri-icon.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "ziriSearch",
+        "contents": "Welcome to Ziri! Get started by indexing your repository.\n[Index Repository](command:ziri.index)"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x"
+  },
+  "dependencies": {
+    "ziri": "file:../ziri-js"
+  }
+}

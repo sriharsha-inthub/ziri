@@ -151,9 +151,9 @@ export class OllamaProvider extends BaseEmbeddingProvider {
   getSupportedModels() {
     return [
       'nomic-embed-text',
+      'all-minilm:latest',
       'mxbai-embed-large',
-      'snowflake-arctic-embed',
-      'all-minilm'
+      'snowflake-arctic-embed'
     ];
   }
 

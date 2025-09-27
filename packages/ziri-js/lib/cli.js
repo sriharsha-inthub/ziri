@@ -6,6 +6,8 @@ import { addSource, removeSource, removeSet, listSources, getSources, SOURCES_PA
 import { indexCommand, legacyIndexCommand } from './indexer.js';
 import { queryCommand } from './query.js';
 import { chatCommand } from './chat.js';
+import { watchCommand } from './watch.js';
+import { lspCommand } from './lsp/command.js';
 import { ConfigManager } from './config/config-manager.js';
 
 async function initializeConfigManager() {
@@ -155,11 +157,12 @@ export async function main(){
     string: [
       'scope', 'set', 'k', 'provider', 'concurrency', 'batch-size', 'memory-limit',
       'exclude', 'providers', 'duration', 'output', 'api-key', 'base-url', 'model',
-      'config', 'key'
+      'config', 'key', 'socket'
     ],
     // Boolean options
     boolean: [
-      'all', 'help', 'version', 'legacy', 'verbose', 'force', 'benchmark', 'stats'
+      'all', 'help', 'version', 'legacy', 'verbose', 'force', 'benchmark', 'stats',
+      'stdio', 'node-ipc'
     ],
     // Aliases
     alias: {
@@ -210,6 +213,8 @@ export async function main(){
       break;
     case 'query': await queryCommand({ argv }); break;
     case 'chat': await chatCommand({ argv, configManager }); break;
+    case 'watch': await watchCommand({ argv, configManager }); break;
+    case 'lsp': await lspCommand({ argv }); break;
     case 'sources': await handleSources(argv); break;
     case 'config': await handleConfig(argv, configManager); break;
     case 'benchmark': await handleBenchmark(argv, configManager); break;
@@ -217,6 +222,15 @@ export async function main(){
     case 'where':
       console.log('Home:', resolveHome());
       console.log('Sources registry:', SOURCES_PATH());
+      break;
+    case 'repl': 
+      const { ZiriRepl } = await import('./repl.js');
+      const repl = new ZiriRepl(configManager);
+      await repl.start();
+      break;
+    case 'config-ui': 
+      const { configUICommand } = await import('./config-ui/index.js');
+      await configUICommand({ argv });
       break;
     default: help();
   }
@@ -235,8 +249,12 @@ Commands:
   index [options]                    Index current repository with enhanced context (default)
   query "your question" [options]    Query indexed repositories with rich results
   chat "your question" [options]     Chat with AI using codebase context (Ollama default)
+  watch [options]                    Watch repository and auto-reindex on file changes
+  lsp [options]                      Start Language Server Protocol server for IDE integration
+  repl                              Start interactive REPL mode
   sources <command> [options]        Manage source repositories
   config <command> [options]         Manage configuration
+  config-ui [options]                Advanced configuration UI
   benchmark [options]                Run performance benchmarks
   doctor                             Check system health and Ollama status
   where                              Show storage locations
@@ -251,6 +269,8 @@ Index Options:
   --verbose                Show detailed progress information
   --stats                  Display comprehensive statistics
   --exclude <patterns>     Comma-separated exclusion patterns
+  --parallel               Enable parallel file system walk (default: false)
+  --walk-concurrency <num> Number of parallel file system walkers (default: 4)
 
 Query Options:
   --scope <scope>          Query scope: repo (current), all (all indexed), set:NAME (specific set)
@@ -261,11 +281,32 @@ Chat Options (NEW):
   --scope <scope>          Query scope for context: repo (current), all (all indexed), set:NAME (specific set)
   --verbose                Show detailed processing and context information
 
+Watch Options:
+  --verbose                Show detailed file change information
+
+LSP Options:
+  --stdio                  Use stdio for communication (default for most IDEs)
+  --socket <port>          Use socket for communication
+  --node-ipc               Use node-ipc for communication
+
 Config Commands:
   ziri config show                        Show current configuration
   ziri config set <key> <value>          Set configuration value
   ziri config provider <name> [options]  Configure embedding provider
+  ziri config security <command>         Manage security settings
   ziri config reset                       Reset configuration to defaults
+
+Config UI Options:
+  start                    Start web-based configuration UI server
+  show                     Show current configuration
+  template [name]          Load or list templates
+  export [--format]        Export configuration
+  set <path> <value>       Set configuration value
+
+Security Commands:
+  ziri config security enable <passphrase>  Enable encryption with passphrase
+  ziri config security disable              Disable encryption
+  ziri config security status               Show encryption status
 
 Provider Configuration (Ollama is default):
   --api-key <key>          API key for cloud providers (OpenAI, Hugging Face, Cohere)
@@ -301,6 +342,8 @@ Examples:
   ziri index                                              # Enhanced context indexing
   ziri query "authentication logic"                       # Rich query results
   ziri chat "how does user authentication work?"          # AI chat with context
+  ziri watch                                              # Auto-reindex on file changes
+  ziri lsp                                                # Start LSP server for IDE integration
   
   # Advanced indexing
   ziri index --provider ollama --concurrency 5 --batch-size 100
@@ -403,134 +446,83 @@ async function handleConfig(argv, configManager) {
     
     // Set defaults for Ollama provider
     if (provider === 'ollama') {
-      providerConfig.model = providerConfig.embeddingModel || providerConfig.model || 'all-minilm';
+      providerConfig.model = providerConfig.embeddingModel || providerConfig.model || 'nomic-embed-text';
       providerConfig.textModel = providerConfig.textModel || 'llama3.2:3b';
-      providerConfig.dimensions = 384; // all-minilm dimensions
+      providerConfig.dimensions = 768; // nomic-embed-text dimensions
       providerConfig.baseUrl = providerConfig.baseUrl || 'http://localhost:11434';
     }
     
     await configManager.configureProvider(provider, providerConfig);
     console.log(`Configured provider: ${provider}`);
+  } else if (sub === 'security') {
+    // Handle security configuration
+    await handleSecurityConfig(argv, configManager);
   } else if (sub === 'reset') {
     await configManager.resetConfig();
     console.log('Configuration reset to defaults');
   } else {
-    console.log('Usage: ziri config show|set|provider|reset');
+    console.log('Usage: ziri config show|set|provider|security|reset');
   }
 }
 
-async function handleBenchmark(argv, configManager) {
-  const { ProviderBenchmark } = await import('./embedding/provider-benchmark.js');
+async function handleSecurityConfig(argv, configManager) {
+  const securitySub = argv._[2];
   
-  const options = {
-    providers: argv.providers ? argv.providers.split(',') : ['openai', 'ollama'],
-    duration: parseInt(argv.duration) || 60,
-    outputFile: argv.output
-  };
-  
-  console.log('🏃 Running performance benchmark...');
-  console.log(`Providers: ${options.providers.join(', ')}`);
-  console.log(`Duration: ${options.duration}s`);
-  
-  const benchmark = new ProviderBenchmark();
-  const results = await benchmark.runCompleteBenchmark({
-    providers: await configManager.getProviderConfigs(options.providers),
-    testDuration: options.duration * 1000
-  });
-  
-  console.log('\n📊 Benchmark Results:');
-  console.log(JSON.stringify(results, null, 2));
-  
-  if (options.outputFile) {
-    const fs = await import('node:fs/promises');
-    await fs.writeFile(options.outputFile, JSON.stringify(results, null, 2));
-    console.log(`Results saved to: ${options.outputFile}`);
-  }
-}
-
-async function doctor(configManager){
-  console.log('🔍 Ziri System Health Check\n');
-  
-  // Check sources
-  const s = await getSources();
-  console.log('📁 Sources:');
-  console.log(`   Sets: ${Object.keys(s.sets||{}).join(', ') || 'none'}`);
-  
-  // Check configuration
-  console.log('\n⚙️  Configuration:');
-  const config = await configManager.getConfig();
-  console.log(`   Default provider: ${config.defaultProvider || 'ollama'}`);
-  console.log(`   Memory limit: ${config.performance?.memoryLimit || 512}MB`);
-  console.log(`   Concurrency: ${config.performance?.concurrency || 3}`);
-  
-  // Check Ollama availability (since it's now the default)
-  console.log('\n🤖 Ollama Status:');
-  const ollamaStatus = await configManager.checkOllamaAvailability();
-  
-  if (ollamaStatus.available) {
-    console.log('   ✅ Ollama is running and configured');
-    console.log(`   📋 Available models: ${ollamaStatus.models.join(', ')}`);
-    if (ollamaStatus.embeddingModels.length > 0) {
-      console.log(`   🔗 Embedding models: ${ollamaStatus.embeddingModels.join(', ')}`);
+  if (securitySub === 'enable') {
+    const passphrase = argv._[3];
+    if (!passphrase) {
+      console.error('Usage: ziri config security enable <passphrase>');
+      console.log('Note: For production use, provide passphrase via secure input or environment variable');
+      return;
     }
-    if (ollamaStatus.textModels.length > 0) {
-      console.log(`   💬 Text models: ${ollamaStatus.textModels.join(', ')}`);
+    
+    try {
+      // Import security modules dynamically
+      const { SecurityConfig } = await import('./security/config.js');
+      const securityConfig = new SecurityConfig();
+      await securityConfig.load();
+      await securityConfig.enableEncryption(passphrase);
+      
+      console.log('✅ Encryption enabled successfully');
+      console.log('🔒 All future embeddings will be encrypted at rest');
+      console.log('⚠️  Existing data remains unencrypted - re-index to encrypt');
+    } catch (error) {
+      console.error('❌ Failed to enable encryption:', error.message);
+    }
+  } else if (securitySub === 'disable') {
+    try {
+      const { SecurityConfig } = await import('./security/config.js');
+      const securityConfig = new SecurityConfig();
+      await securityConfig.load();
+      await securityConfig.disableEncryption();
+      
+      console.log('✅ Encryption disabled successfully');
+      console.log('🔓 Future embeddings will be stored unencrypted');
+    } catch (error) {
+      console.error('❌ Failed to disable encryption:', error.message);
+    }
+  } else if (securitySub === 'status') {
+    try {
+      const { SecurityConfig } = await import('./security/config.js');
+      const securityConfig = new SecurityConfig();
+      await securityConfig.load();
+      
+      const isEnabled = securityConfig.isEncryptionEnabled();
+      console.log(`Encryption Status: ${isEnabled ? '✅ Enabled' : '❌ Disabled'}`);
+      
+      if (isEnabled) {
+        const config = securityConfig.getConfig();
+        console.log(`Algorithm: ${config.encryption.algorithm}`);
+        console.log(`Key Derivation: ${config.encryption.keyDerivation.hash} (${config.encryption.keyDerivation.iterations} iterations)`);
+      }
+    } catch (error) {
+      console.error('❌ Failed to check encryption status:', error.message);
     }
   } else {
-    console.log(`   ❌ Ollama issue: ${ollamaStatus.error}`);
-    console.log('   💡 Suggestions:');
-    ollamaStatus.suggestions.forEach(suggestion => {
-      console.log(`      • ${suggestion}`);
-    });
-    
-    // Check for fallback options
-    const fallback = await configManager.getGracefulFallbackProvider();
-    if (fallback.provider) {
-      console.log(`   🔄 Fallback available: ${fallback.reason}`);
-    } else {
-      console.log(`   ⚠️  No fallback: ${fallback.reason}`);
-    }
+    console.log('Usage: ziri config security enable|disable|status [passphrase]');
+    console.log('Examples:');
+    console.log('  ziri config security enable my-secret-passphrase');
+    console.log('  ziri config security status');
+    console.log('  ziri config security disable');
   }
-  
-  // Check all providers
-  console.log('\n🔌 All Providers:');
-  const providers = config.providers || {};
-  
-  for (const [name, providerConfig] of Object.entries(providers)) {
-    const isDefault = name === config.defaultProvider ? ' (default)' : '';
-    
-    if (name === 'ollama') {
-      const status = ollamaStatus.available ? '✅' : '❌';
-      console.log(`   ${name}: ${status} ${ollamaStatus.available ? 'running' : 'unavailable'}${isDefault}`);
-    } else {
-      const hasKey = !!(providerConfig.apiKey || process.env[`${name.toUpperCase()}_API_KEY`] || process.env.OPENAI_API_KEY);
-      const status = hasKey ? '✅' : '❌';
-      console.log(`   ${name}: ${status} ${hasKey ? 'configured' : 'missing API key'}${isDefault}`);
-    }
-  }
-  
-  // Check legacy environment
-  console.log('\n🔧 Legacy Environment:');
-  console.log(`   ZIRI_EMBEDDER: ${process.env.ZIRI_EMBEDDER || 'not set'}`);
-  const hasLegacyOpenAI = !!(process.env.ZIRI_OPENAI_API_KEY || process.env.OPENAI_API_KEY);
-  console.log(`   OpenAI key: ${hasLegacyOpenAI ? '✅ present' : '❌ missing'}`);
-  
-  // Check storage
-  console.log('\n💾 Storage:');
-  console.log(`   Home: ${resolveHome()}`);
-  console.log(`   Sources: ${SOURCES_PATH()}`);
-  
-  // Performance recommendations
-  console.log('\n💡 Recommendations:');
-  if (!ollamaStatus.available) {
-    console.log('   • Install and start Ollama: https://ollama.ai/download');
-    console.log('   • Pull required models: ollama pull all-minilm && ollama pull llama3.2:3b');
-  }
-  if (!hasLegacyOpenAI && !providers.openai?.apiKey && !ollamaStatus.available) {
-    console.log('   • Configure a fallback provider: ziri config provider openai --api-key sk-...');
-  }
-  if (Object.keys(s.sets||{}).length === 0) {
-    console.log('   • Add a source repository: ziri sources add .');
-  }
-  console.log('   • Run benchmark to optimize performance: ziri benchmark');
 }

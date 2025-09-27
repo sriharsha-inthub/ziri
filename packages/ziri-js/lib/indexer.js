@@ -8,6 +8,7 @@ import { makeEmbedder } from './embedder.js';
 import { readIndex, writeIndex, ensureRepoStore, saveChunk, setEnhancedStorageMode } from './store_repo.js';
 import { sha256 } from './hash.js';
 import { getSources } from './registry.js';
+import { parallelWalk } from './filesystem/parallel-walk.js';
 
 // Removed unused new architecture imports
 
@@ -21,8 +22,11 @@ export async function enhancedLegacyIndexCommand({ argv, configManager }) {
   // Enable enhanced storage for rich context
   setEnhancedStorageMode(true);
   
+  // Initialize security features
+  await initializeSecurity();
+  
   const startTime = Date.now();
-  const repoPath = process.cwd();
+  let repoPath = process.cwd();
 
   // Handle set: targeting
   if (argv._ && argv._[0] && argv._[0].startsWith('set:')) {
@@ -85,7 +89,17 @@ export async function enhancedLegacyIndexCommand({ argv, configManager }) {
   // First pass: count total files for progress
   console.log(`📊 Scanning files...`);
   const filesToProcess = [];
-  for await (const { full, rel } of walkDir(repoPath)){
+  
+  // Use parallel walk if enabled
+  const useParallelWalk = argv.parallel || process.env.ZIRI_PARALLEL_WALK === 'true';
+  const walkOptions = {
+    concurrency: argv.walkConcurrency ? parseInt(argv.walkConcurrency) : 4
+  };
+  
+  const fileWalker = useParallelWalk ? (...args) => parallelWalk(...args) : walkDir;
+  const walker = useParallelWalk ? fileWalker(repoPath, walkOptions) : fileWalker(repoPath);
+  
+  for await (const { full, rel } of walker){
     const stat = await fs.stat(full);
     if (stat.size > 1.5*1024*1024) continue; // Skip large files
     filesToProcess.push({ full, rel, size: stat.size });
@@ -308,7 +322,17 @@ export async function legacyIndexCommand({ argv }){
   // First pass: count total files for progress
   console.log(`📊 Scanning files...`);
   const filesToProcess = [];
-  for await (const { full, rel } of walkDir(repoPath)){
+  
+  // Use parallel walk if enabled
+  const useParallelWalk = argv.parallel || process.env.ZIRI_PARALLEL_WALK === 'true';
+  const walkOptions = {
+    concurrency: argv.walkConcurrency ? parseInt(argv.walkConcurrency) : 4
+  };
+  
+  const fileWalker = useParallelWalk ? (...args) => parallelWalk(...args) : walkDir;
+  const walker = useParallelWalk ? fileWalker(repoPath, walkOptions) : fileWalker(repoPath);
+  
+  for await (const { full, rel } of walker){
     const stat = await fs.stat(full);
     if (stat.size > 1.5*1024*1024) continue; // Skip large files
     filesToProcess.push({ full, rel, size: stat.size });

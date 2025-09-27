@@ -55,14 +55,14 @@ export async function chatCommand({ argv, configManager }) {
       console.error('\n💡 To set up Ollama (recommended):');
       console.error('   1. Install Ollama: https://ollama.ai/download');
       console.error('   2. Start Ollama: ollama serve');
-      console.error('   3. Pull models: ollama pull all-minilm && ollama pull llama3.2');
+      console.error('   3. Pull models: ollama pull nomic-embed-text && ollama pull qwen2:1.5b');
       console.error('\n💡 Or configure an alternative provider:');
       console.error('   ziri config provider openai --api-key sk-...');
     } else if (error.message.includes('Ollama provider not configured')) {
       console.error('\n💡 To configure Ollama:');
       console.error('   1. Install Ollama: https://ollama.ai/download');
       console.error('   2. Start Ollama: ollama serve');
-      console.error('   3. Pull models: ollama pull all-minilm && ollama pull llama3.2');
+      console.error('   3. Pull models: ollama pull nomic-embed-text && ollama pull qwen2:1.5b');
     } else if (error.message.includes('Cannot connect to Ollama')) {
       console.error('\n💡 Make sure Ollama is running:');
       console.error('   1. Start Ollama: ollama serve');
@@ -75,7 +75,7 @@ export async function chatCommand({ argv, configManager }) {
       console.error('\n💡 Chat is currently only supported with Ollama:');
       console.error('   1. Install Ollama: https://ollama.ai/download');
       console.error('   2. Start Ollama: ollama serve');
-      console.error('   3. Pull models: ollama pull all-minilm && ollama pull llama3.2');
+      console.error('   3. Pull models: ollama pull nomic-embed-text && ollama pull qwen2:1.5b');
     }
     
     if (argv.verbose) {
@@ -110,7 +110,7 @@ async function performChatOperation(query, argv, configManager, startTime) {
   console.log('✅ Using Ollama for chat generation');
 
   // Step 2: Search for relevant context in vector store
-  console.log('\n🔍 Searching for relevant context...');
+  console.log('\n� Searching for relevant context...');
   
   const contextResults = await getContextFromQuery(query, argv);
 
@@ -337,7 +337,7 @@ async function generateWithOllama(userQuery, context, configManager) {
     }
 
     const baseUrl = ollamaConfig.baseUrl || 'http://localhost:11434';
-    const model = ollamaConfig.textModel || 'llama3.2:3b';
+    const model = ollamaConfig.textModel || 'qwen2:1.5b';
 
     // Prepare the prompt
     const systemPrompt = `You are an expert code assistant. Use the provided code context to give a comprehensive and accurate answer to the user's question. Be specific about code locations, functions, and implementation details.`;
@@ -464,7 +464,7 @@ async function generateWithOllama(userQuery, context, configManager) {
     console.log(`🤖 Using model: ${finalModel}`);
 
     // Make the API call with proper error handling
-    console.log(`🔗 Generating response...`);
+    console.log(`� Generating response...`);
 
     const requestBody = {
       model: finalModel,

@@ -7,10 +7,29 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { inferLanguage } from '../store_repo.js';
 import { CodeAnalyzer } from '../metadata/code-analyzer.js';
+import { EncryptionService } from '../security/encryption.js';
+import { SecurityConfig } from '../security/config.js';
 
 export class EnhancedStorage {
   constructor(baseDirectory) {
     this.baseDirectory = baseDirectory;
+    this.securityConfig = new SecurityConfig();
+    this.encryptionService = null;
+  }
+
+  /**
+   * Initialize security features
+   */
+  async initializeSecurity() {
+    await this.securityConfig.load();
+    if (this.securityConfig.isEncryptionEnabled()) {
+      // In a real implementation, we'd get the passphrase from a secure source
+      // For now, we'll use a placeholder - in practice this would come from user input
+      const config = this.securityConfig.getConfig();
+      if (config.encryption.passphrase) {
+        this.encryptionService = new EncryptionService(config.encryption.passphrase);
+      }
+    }
   }
 
   /**

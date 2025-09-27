@@ -1,6 +1,6 @@
 {
   "name": "ziri-monorepo",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Ziri AI Code Context CLI - Monorepo",
   "type": "module",
   "private": true,
@@ -9,7 +9,9 @@
     "validate:all": "npm run validate:structure",
     "docs:check": "echo 'Checking documentation organization...' && npm run validate:structure",
     "clean:root": "echo 'Checking for unauthorized files in root...' && npm run validate:structure",
-    "postinstall": "echo 'Run npm run validate:all to check project structure. See AGENTS.md for complete project standards.'"
+    "postinstall": "echo 'Run npm run validate:all to check project structure. See AGENTS.md for complete project standards.'",
+    "render-docs": "node scripts/render-docs.js",
+    "prepublishOnly": "npm run render-docs && npm run check:test-types && npm run test:unit-only && npm run build"
   },
   "workspaces": [
     "packages/*"

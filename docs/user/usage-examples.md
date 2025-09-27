@@ -4,108 +4,15 @@ This document provides practical examples of using Ziri for various scenarios an
 
 ## Getting Started
 
-### First-Time Setup with Ollama (Recommended)
+> **NOTE:** The full step‑by‑step setup is covered in the Quick‑Start guide.
 
-```bash
-# Install Ziri
-npm install -g ziri
-
-# Install Ollama (https://ollama.ai/download)
-# Pull required models
-ollama pull nomic-embed-text && ollama pull llama3.2
-
-# Check system health and Ollama status
-ziri doctor
-
-# Index your first repository with enhanced context
-cd /path/to/your/project
-ziri index
-
-# Try your first query (shows code snippets!)
-ziri query "authentication logic"
-
-# Try the new chat feature
-ziri chat "how does authentication work in this project?"
-```
-
-### Alternative Setup with Cloud Providers
-
-```bash
-# Install Ziri
-npm install -g ziri
-
-# Configure cloud provider
-ziri config provider openai --api-key sk-your-openai-key
-
-# Index and query
-cd /path/to/your/project
-ziri index
-ziri query "authentication logic"
-```
+- Follow the quick‑start instructions: [quickstart.md](quickstart.md)
 
 ## Provider Configuration Examples
 
-### OpenAI Configuration
+> **NOTE:** Detailed provider configuration examples live in the Configuration guide.
 
-```bash
-# Basic OpenAI setup
-ziri config provider openai --api-key sk-your-key
-
-# Advanced OpenAI setup with custom model
-ziri config provider openai \
-  --api-key sk-your-key \
-  --model text-embedding-3-large \
-  --base-url https://api.openai.com/v1
-```
-
-### Ollama (Local) Configuration - Default Provider
-
-```bash
-# Basic Ollama setup (automatic if Ollama is running)
-ziri config provider ollama
-
-# Custom Ollama setup
-ziri config provider ollama \
-  --base-url http://localhost:11434 \
-  --model nomic-embed-text
-
-# Verify Ollama models for chat functionality
-ollama list
-ollama pull llama3.2  # If not already installed
-  --model nomic-embed-text
-
-# Remote Ollama instance
-ziri config provider ollama \
-  --base-url http://your-ollama-server:11434 \
-  --model all-minilm
-```
-
-### Hugging Face Configuration
-
-```bash
-# Hugging Face with API key
-ziri config provider huggingface \
-  --api-key hf_your-token \
-  --model sentence-transformers/all-MiniLM-L6-v2
-
-# Hugging Face with custom endpoint
-ziri config provider huggingface \
-  --api-key hf_your-token \
-  --base-url https://api-inference.huggingface.co \
-  --model sentence-transformers/all-mpnet-base-v2
-```
-
-### Cohere Configuration
-
-```bash
-# Basic Cohere setup
-ziri config provider cohere --api-key your-cohere-key
-
-# Cohere with specific model
-ziri config provider cohere \
-  --api-key your-cohere-key \
-  --model embed-english-v3.0
-```
+- See full provider configuration in [configuration.md](configuration.md).
 
 ## Indexing Scenarios
 
@@ -254,47 +161,9 @@ ziri index --verbose  # Shows which files changed
 
 ## Performance Optimization Examples
 
-### Finding Optimal Settings
+> **NOTE:** Detailed performance‑tuning guidance is in the Configuration guide.
 
-```bash
-# Run comprehensive benchmark
-ziri benchmark --providers openai,ollama --duration 120 --output results.json
-
-# Quick benchmark for current provider
-ziri benchmark --duration 30
-
-# Compare all available providers
-ziri benchmark --providers openai,ollama,huggingface,cohere --duration 60
-```
-
-### Provider-Specific Optimization
-
-```bash
-# OpenAI optimized (high throughput)
-ziri index --provider openai --concurrency 5 --batch-size 200
-
-# Ollama optimized (local processing)
-ziri index --provider ollama --concurrency 8 --batch-size 50
-
-# Hugging Face optimized (rate limit friendly)
-ziri index --provider huggingface --concurrency 2 --batch-size 25
-
-# Cohere optimized (balanced)
-ziri index --provider cohere --concurrency 3 --batch-size 75
-```
-
-### Memory-Constrained Environments
-
-```bash
-# Minimal memory usage
-ziri index --memory-limit 128 --batch-size 10 --concurrency 1
-
-# Balanced low-memory setup
-ziri index --memory-limit 256 --batch-size 25 --concurrency 2
-
-# With checkpointing for reliability
-ziri index --memory-limit 256 --batch-size 20 --verbose
-```
+- See full performance settings: [configuration.md](configuration.md)
 
 ## Multi-Repository Management
 
@@ -576,6 +445,62 @@ EOF
 # Team members can use shared config
 ziri config load .ziri-config.json
 ziri index
+```
+
+## Automatic Re-indexing (NEW)
+
+#### Development Workflow with Watch Mode
+
+```bash
+# Start watching your repository
+ziri watch
+
+# In another terminal, make changes to your code:
+# - Add new files
+# - Modify existing files
+# - Delete files
+# Ziri will automatically re-index changes in real-time
+
+# Watch with verbose output to see detailed changes
+ziri watch --verbose
+
+# Stop watching with Ctrl+C
+```
+
+#### Team Development with Watch Mode
+
+```bash
+# Each developer can run watch mode locally
+ziri watch &  # Run in background
+
+# Make code changes and see immediate indexing
+echo "console.log('New feature');" > new-feature.js
+
+# Query immediately reflects changes
+ziri query "new feature"
+```
+
+#### Monorepo Watch Mode
+
+```bash
+# Watch mode works great with monorepos
+ziri watch
+
+# Changes to any file in the repository are automatically indexed
+# This keeps search results current during active development
+```
+
+#### Performance Monitoring with Watch Mode
+
+```bash
+# Watch mode includes performance metrics
+ziri watch --verbose
+
+# Output shows:
+# - File change events
+# - Processing times
+# - Memory usage
+# - Error handling
 ```
 
 These examples should cover most common use cases and provide a solid foundation for using Ziri effectively in various scenarios.

@@ -24,7 +24,7 @@ curl http://localhost:11434/api/tags
 ## Installation Issues
 
 ### Error: Cannot find package 'minimist'
-This was fixed in v0.1.1 by bundling runtime dependencies. If you still see this error:
+This was fixed in {{VERSION}} by bundling runtime dependencies. If you still see this error:
 
 ```bash
 # Clean reinstall (recommended)
@@ -374,7 +374,7 @@ ollama list
 # Pull required models
 ollama pull nomic-embed-text    # Essential for embeddings
 ollama pull llama3.2           # Essential for chat
-ollama pull all-minilm         # Alternative embedding model
+ollama pull all-minilm         # Alternative embedding model (faster, lower quality)
 
 # Configure specific models
 ziri config provider ollama --model nomic-embed-text
@@ -397,7 +397,7 @@ ollama serve
 
 # Use smaller models if needed
 ollama pull llama3.2:8b        # Smaller variant
-ollama pull nomic-embed-text   # Efficient embedding model
+ollama pull nomic-embed-text   # Recommended embedding model
 ```
 
 ### Hugging Face Issues

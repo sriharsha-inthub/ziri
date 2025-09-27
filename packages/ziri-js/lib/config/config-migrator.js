@@ -152,16 +152,47 @@ export class ConfigMigrator {
    * Migration from 0.1.0 to 0.2.0
    * - Add provider rate limiting configuration
    * - Add performance cache settings
+   * - Add missing default providers
    */
   async migrateFrom010To020(config) {
     const migrated = { ...config };
     
+    // Add missing default providers
+    const defaultProviders = {
+      ollama: {
+        type: 'ollama',
+        baseUrl: 'http://localhost:11434',
+        model: 'nomic-embed-text',
+        textModel: 'qwen2:1.5b',
+        dimensions: 768,
+        enabled: true,
+        rateLimit: this.getDefaultRateLimit('ollama')
+      },
+      openai: {
+        type: 'openai',
+        model: 'text-embedding-3-small',
+        dimensions: 1536,
+        maxTokens: 8192,
+        rateLimit: this.getDefaultRateLimit('openai'),
+        enabled: true
+      }
+    };
+    
+    if (!migrated.providers) {
+      migrated.providers = {};
+    }
+    
+    // Add missing default providers
+    for (const [name, providerConfig] of Object.entries(defaultProviders)) {
+      if (!migrated.providers[name]) {
+        migrated.providers[name] = providerConfig;
+      }
+    }
+    
     // Add rate limiting to existing providers
-    if (migrated.providers) {
-      for (const [name, provider] of Object.entries(migrated.providers)) {
-        if (!provider.rateLimit) {
-          provider.rateLimit = this.getDefaultRateLimit(provider.type);
-        }
+    for (const [name, provider] of Object.entries(migrated.providers)) {
+      if (!provider.rateLimit) {
+        provider.rateLimit = this.getDefaultRateLimit(provider.type);
       }
     }
     

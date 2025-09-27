@@ -25,7 +25,16 @@ export class TechnologyDetector {
       'cargo': ['Cargo.toml', 'Cargo.lock'],
       'go-modules': ['go.mod', 'go.sum'],
       'bundler': ['Gemfile', 'Gemfile.lock'],
-
+      
+      // IBM ACE
+      'ibm-ace': ['*.msgflow', '*.esql', '*.bar', '*.appzip', 'broker.xml'],
+      'msgflow': ['*.msgflow'],
+      'esql': ['*.esql'],
+      
+      // Mulesoft
+      'mulesoft': ['*.xml', '*.dwl', 'mule-artifact.json', 'mule-app.properties'],
+      'dataweave': ['*.dwl'],
+      
       // Build tools and bundlers
       'webpack': ['webpack.config.js', 'webpack.config.ts'],
       'vite': ['vite.config.js', 'vite.config.ts'],
@@ -203,6 +212,65 @@ export class TechnologyDetector {
       'azure': [
         /azure/i,
         /import.*azure/i
+      ],
+      
+      // IBM ACE
+      'ibm-ace': [
+        /CREATE\s+MODULE/i,
+        /BROKER\s+SCHEMA/i,
+        /DECLARE\s+NAMESPACE/i,
+        /CREATE\s+PROCEDURE/i,
+        /CREATE\s+FUNCTION/i,
+        /ESQL/i
+      ],
+      'msgflow': [
+        /<\?xml/i,
+        /<MessageFlow/i,
+        /<ComputeNode/i,
+        /<FilterNode/i,
+        /<MQInput/i
+      ],
+      'esql': [
+        /CREATE\s+MODULE/i,
+        /BROKER\s+SCHEMA/i,
+        /DECLARE\s+NAMESPACE/i
+      ],
+      
+      // Mulesoft
+      'mulesoft': [
+        /<mule/i,
+        /xmlns:mule/i,
+        /<flow\s+name/i,
+        /<http:listener/i,
+        /<db:select/i
+      ],
+      'dataweave': [
+        /output\s+application\/json/i,
+        /input\s+payload/i,
+        /%dw\s+2\.0/i,
+        /mapObject/i,
+        /---/
+      ],
+      
+      // Flutter/Dart
+      'flutter': [
+        /import\s+'package:flutter/i,
+        /extends\s+StatelessWidget/i,
+        /extends\s+StatefulWidget/i,
+        /MaterialApp/i
+      ],
+      'dart': [
+        /void\s+main/i,
+        /import\s+'dart:/i,
+        /class\s+\w+\s+extends/i
+      ],
+      
+      // YAML/CloudFormation
+      'cloudformation': [
+        /AWSTemplateFormatVersion/i,
+        /Resources:/i,
+        /Type:\s+AWS::/i,
+        /!Ref\s/
       ]
     };
 
@@ -226,6 +294,12 @@ export class TechnologyDetector {
       'numpy': ['numpy'],
       'tensorflow': ['tensorflow'],
       'pytorch': ['torch'],
+      'mulesoft-java': ['mule-core', 'mule-module-http', 'mule-transport-http', 'mule-transport-jms'],
+      'flutter': ['flutter', 'flutter_bloc', 'provider', 'flutter_localizations'],
+      'dart': ['dart_style', 'analyzer', 'build_runner'],
+      'ibm-ace': ['integration-api', 'integration-http', 'integration-mq', 'integration-file'],
+      'aws-cdk': ['@aws-cdk/core', 'aws-cdk-lib'],
+      'cloudformation': ['cfn-lint', 'aws-cf-template-flip'],
 
       // Java
       'spring-boot': ['spring-boot-starter'],
@@ -444,6 +518,14 @@ export class TechnologyDetector {
       '.c': 'c',
       '.html': 'html',
       '.css': 'css',
+      '.msgflow': 'msgflow',
+      '.esql': 'esql',
+      '.dwl': 'dataweave',
+      '.mflow': 'mulesoft',
+      '.dart': 'dart',
+      '.yaml': 'yaml',
+      '.yml': 'yaml',
+      '.template': 'cloudformation',
       '.scss': 'sass',
       '.less': 'less',
       '.sql': 'sql',
@@ -534,7 +616,16 @@ export class TechnologyDetector {
       'kubernetes': 'Kubernetes',
       'aws': 'Amazon Web Services',
       'gcp': 'Google Cloud Platform',
-      'azure': 'Microsoft Azure'
+      'azure': 'Microsoft Azure',
+      'ibm-ace': 'IBM App Connect Enterprise',
+      'msgflow': 'IBM Message Flow',
+      'esql': 'IBM ESQL',
+      'mulesoft': 'Mulesoft',
+      'dataweave': 'Mulesoft DataWeave',
+      'flutter': 'Flutter',
+      'dart': 'Dart',
+      'yaml': 'YAML',
+      'cloudformation': 'AWS CloudFormation'
     };
 
     return nameMap[name] || name.charAt(0).toUpperCase() + name.slice(1);
@@ -548,11 +639,13 @@ export class TechnologyDetector {
       'Programming Languages': [],
       'Frontend Frameworks': [],
       'Backend Frameworks': [],
+      'Integration Platforms': [],
       'Databases': [],
       'Build Tools': [],
       'Testing': [],
       'DevOps': [],
       'Cloud Services': [],
+      'Infrastructure as Code': [],
       'Other': []
     };
 
@@ -564,26 +657,44 @@ export class TechnologyDetector {
       'C#': 'Programming Languages',
       'Go': 'Programming Languages',
       'Rust': 'Programming Languages',
+      'Dart': 'Programming Languages',
+      'IBM ESQL': 'Programming Languages',
+      'Mulesoft DataWeave': 'Programming Languages',
+      
       'React': 'Frontend Frameworks',
       'Vue.js': 'Frontend Frameworks',
       'Angular': 'Frontend Frameworks',
+      'Flutter': 'Frontend Frameworks',
+      
       'Express': 'Backend Frameworks',
       'Django': 'Backend Frameworks',
       'Flask': 'Backend Frameworks',
       'Spring': 'Backend Frameworks',
+      
+      'IBM App Connect Enterprise': 'Integration Platforms',
+      'IBM Message Flow': 'Integration Platforms',
+      'Mulesoft': 'Integration Platforms',
+      
       'MongoDB': 'Databases',
       'PostgreSQL': 'Databases',
       'MySQL': 'Databases',
       'Redis': 'Databases',
+      
       'Webpack': 'Build Tools',
       'Vite': 'Build Tools',
+      
       'Jest': 'Testing',
       'Cypress': 'Testing',
+      
       'Docker': 'DevOps',
       'Kubernetes': 'DevOps',
+      'YAML': 'DevOps',
+      
       'AWS': 'Cloud Services',
       'GCP': 'Cloud Services',
-      'Azure': 'Cloud Services'
+      'Azure': 'Cloud Services',
+      
+      'AWS CloudFormation': 'Infrastructure as Code'
     };
 
     for (const tech of technologies) {

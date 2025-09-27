@@ -1,0 +1,47 @@
+name: Publish Ziri to NPM
+
+on:
+  push:
+    branches: [main]
+    # optional: tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Configure npm authentication
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Install dependencies (root)
+        run: npm ci
+
+      - name: Bump version (patch)
+        run: |
+          cd packages/ziri-js
+          npm version patch -m "chore: bump version to %s [skip ci]"
+
+      - name: Publish to NPM
+        run: |
+          cd packages/ziri-js
+          npm publish --access public
+
+      - name: Push version bump
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          force: false

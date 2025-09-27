@@ -334,7 +334,7 @@ describe('EmbeddingClient', () => {
     const mockResponse = {
       ok: true,
       json: () => Promise.resolve({
-        data: [{ embedding: new Array(1536).fill(0.1) }]
+        embedding: new Array(768).fill(0.1) // Ollama returns 768 dimensions for nomic-embed-text
       })
     };
     
@@ -344,7 +344,7 @@ describe('EmbeddingClient', () => {
     const embeddings = await client.embed(texts);
     
     expect(embeddings).toHaveLength(1);
-    expect(embeddings[0]).toHaveLength(1536);
+    expect(embeddings[0]).toHaveLength(768); // Ollama uses 768 dimensions
   });
 
   it('should switch providers', () => {

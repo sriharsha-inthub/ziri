@@ -1,10 +1,11 @@
 {
   "name": "ziri",
-  "version": "0.1.15",
+  "version": "0.2.1",
   "description": "Ziri — AI code context CLI (per-repo stores, streaming embeddings, multi-repo registry)",
   "type": "module",
   "bin": {
-    "ziri": "bin/ziri.js"
+    "ziri": "bin/ziri.js",
+    "ziri-lsp": "bin/ziri-lsp.js"
   },
   "engines": {
     "node": ">=18"
@@ -18,25 +19,36 @@
     "test": "vitest",
     "test:run": "vitest run --reporter=verbose",
     "test:unit": "vitest run test/unit --reporter=verbose",
+    "test:unit-only": "vitest run test/unit --reporter=verbose",
     "test:integration": "vitest run test/integration --reporter=verbose",
+    "test:passing": "npm run test:unit-only",
+    "check:test-types": "node ../../scripts/check-test-types.js",
+    "prepublishOnly": "npm run check:test-types && npm run test:unit-only && npm run build",
+    "prepublish": "npm run check:test-types && npm run test:unit-only && npm run build",
     "build": "npm pack",
-    "prepublishOnly": "npm run prepublish",
-    "prepublish": "npm run test:passing && npm run build",
-    "test:passing": "vitest --run --reporter=verbose --exclude='**/comprehensive-integration.test.js' --exclude='**/provider-migration.test.js' --exclude='**/requirements-validation.test.js' --exclude='**/performance-regression.test.js' --exclude='**/repository-isolation.test.js' --exclude='**/embedding-pipeline.test.js' --exclude='**/provider-benchmark.test.js' --exclude='**/repository-parser.test.js' --exclude='**/file-walker.test.js' --exclude='**/memory-integration.test.js'",
     "publish:npm": "npm publish",
-    "postinstall": "node -e \"console.log('✅ ziri installed. Run ziri --help.')\""
+    "postinstall": "node -e \"console.log('✅ ziri installed. Run ziri --help.')\"",
+    "render-docs": "node ../../scripts/render-docs.js"
   },
   "files": [
     "bin/",
     "lib/",
     "types/",
     "README.md",
-    "package.json"
+    "package.json",
+    "config-ui/"
   ],
   "dependencies": {
+    "@babel/generator": "^7.23.0",
+    "@babel/parser": "^7.23.0",
+    "@babel/traverse": "^7.23.0",
+    "@babel/types": "^7.23.0",
     "faiss-node": "^0.5.1",
+    "fast-xml-parser": "^5.2.5",
     "minimist": "^1.2.8",
     "toml": "^3.0.0",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.11",
     "yaml": "^2.4.2"
   },
   "devDependencies": {
@@ -59,5 +71,13 @@
     "semantic-search"
   ],
   "author": "Ziri Team",
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "tag": "beta"
+  },
+  "bundleDependencies": [
+    "yaml",
+    "minimist",
+    "toml"
+  ]
 }

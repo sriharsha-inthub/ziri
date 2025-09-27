@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ziri Configuration UI</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --border: #e2e8f0;
+            --sidebar-width: 250px;
+            --header-height: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f1f5f9;
+            color: var(--dark);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: white;
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            overflow-y: auto;
+            position: fixed;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .sidebar-nav {
+            padding: 10px 0;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: #f1f5f9;
+        }
+
+        .nav-item.active {
+            background-color: #eff6ff;
+            border-left: 3px solid var(--primary);
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .header {
+            height: var(--header-height);
+            background-color: white;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .header-title h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+            background-color: white;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 20px;
+        }
+
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .section-content {
+            padding: 20px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-description {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            margin-top: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background-color: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .slider-value {
+            width: 60px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-toggle {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider-toggle:before {
+            transform: translateX(26px);
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 40px;
+            background-color: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 0.875rem;
+            color: var(--secondary);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-header h1,
+            .nav-item span {
+                display: none;
+            }
+            
+            .nav-item {
+                justify-content: center;
+                padding: 15px;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>🔧 Ziri Config</h1>
+            </div>
+            <div class="sidebar-nav">
+                <div class="nav-item active" data-section="general">
+                    <i>⚙️</i>
+                    <span>General</span>
+                </div>
+                <div class="nav-item" data-section="indexing">
+                    <i>📂</i>
+                    <span>Indexing</span>
+                </div>
+                <div class="nav-item" data-section="query">
+                    <i>🔍</i>
+                    <span>Query</span>
+                </div>
+                <div class="nav-item" data-section="advanced">
+                    <i>⚡</i>
+                    <span>Advanced</span>
+                </div>
+                <div class="nav-item" data-section="templates">
+                    <i>📋</i>
+                    <span>Templates</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-title">
+                    <h2>General Settings</h2>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline" id="exportBtn">Export</button>
+                    <button class="btn btn-primary" id="saveBtn">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- General Settings Section -->
+                <div class="section" id="general-section">
+                    <div class="section-header">
+                        <div class="section-title">General Configuration</div>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label class="form-label">Default Provider</label>
+                            <select class="form-control" id="defaultProvider">
+                                <option value="ollama">Ollama (Local)</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="huggingface">Hugging Face</option>
+                            </select>
+                            <div class="form-description">The default embedding provider to use for indexing and queries</div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Concurrency</label>
+                                    <div class="slider-container">
+                                        <input type="range" min="1" max="16" value="5" class="slider" id="concurrency">
+                                        <span class="slider-value" id="concurrency-value">5</span>
+                                    </div>
+                                    <div class="form-description">Number of concurrent processing threads</div>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Batch Size</label>
+                                    <div class="slider-container">
+                                        <input type="range" min="10" max="500" value="100" class="slider" id="batchSize">
+                                        <span class="slider-value" id="batchSize-value">100</span>
+                                    </div>
+                                    <div class="form-description">Number of items to process in each batch</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Memory Limit (MB)</label>
+                            <input type="number" class="form-control" id="memoryLimit" value="512" min="128" max="8192">
+                            <div class="form-description">Maximum memory usage in megabytes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indexing Section -->
+                <div class="section" id="indexing-section" style="display: none;">
+                    <div class="section-header">
+                        <div class="section-title">Indexing Configuration</div>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Chunk Size</label>
+                                    <input type="number" class="form-control" id="chunkSize" value="4000" min="100" max="10000">
+                                    <div class="form-description">Size of code chunks in characters</div>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Overlap Ratio</label>
+                                    <div class="slider-container">
+                                        <input type="range" min="0" max="100" value="15" class="slider" id="overlapRatio">
+                                        <span class="slider-value" id="overlapRatio-value">15%</span>
+                                    </div>
+                                    <div class="form-description">Percentage of overlap between chunks</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Parallel File Walk</label>
+                            <div class="form-description">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="parallelWalkEnabled">
+                                    <span class="slider-toggle"></span>
+                                </label>
+                                Enable parallel directory traversal for faster indexing
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" id="parallelWalkSettings" style="display: none;">
+                            <label class="form-label">Parallel Walk Concurrency</label>
+                            <div class="slider-container">
+                                <input type="range" min="1" max="16" value="4" class="slider" id="parallelWalkConcurrency">
+                                <span class="slider-value" id="parallelWalkConcurrency-value">4</span>
+                            </div>
+                            <div class="form-description">Number of concurrent directory walkers</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Query Section -->
+                <div class="section" id="query-section" style="display: none;">
+                    <div class="section-header">
+                        <div class="section-title">Query Processing</div>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label class="form-label">Default Results</label>
+                            <div class="slider-container">
+                                <input type="range" min="1" max="50" value="8" class="slider" id="defaultResults">
+                                <span class="slider-value" id="defaultResults-value">8</span>
+                            </div>
+                            <div class="form-description">Number of results to return by default</div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-header">
+                                <div class="section-title">BM25 Ranking</div>
+                            </div>
+                            <div class="section-content">
+                                <div class="form-group">
+                                    <label class="form-label">Enable BM25</label>
+                                    <div class="form-description">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="bm25Enabled" checked>
+                                            <span class="slider-toggle"></span>
+                                        </label>
+                                        Enable BM25-style term frequency scoring
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-col">
+                                        <div class="form-group">
+                                            <label class="form-label">K1 Parameter</label>
+                                            <div class="slider-container">
+                                                <input type="range" min="1" max="30" value="15" class="slider" id="bm25K1">
+                                                <span class="slider-value" id="bm25K1-value">1.5</span>
+                                            </div>
+                                            <div class="form-description">Term saturation parameter</div>
+                                        </div>
+                                    </div>
+                                    <div class="form-col">
+                                        <div class="form-group">
+                                            <label class="form-label">B Parameter</label>
+                                            <div class="slider-container">
+                                                <input type="range" min="0" max="100" value="75" class="slider" id="bm25B">
+                                                <span class="slider-value" id="bm25B-value">0.75</span>
+                                            </div>
+                                            <div class="form-description">Length normalization parameter</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-col">
+                                        <div class="form-group">
+                                            <label class="form-label">Vector Weight</label>
+                                            <div class="slider-container">
+                                                <input type="range" min="0" max="100" value="70" class="slider" id="vectorWeight">
+                                                <span class="slider-value" id="vectorWeight-value">70%</span>
+                                            </div>
+                                            <div class="form-description">Weight for vector similarity scoring</div>
+                                        </div>
+                                    </div>
+                                    <div class="form-col">
+                                        <div class="form-group">
+                                            <label class="form-label">BM25 Weight</label>
+                                            <div class="slider-container">
+                                                <input type="range" min="0" max="100" value="20" class="slider" id="bm25Weight">
+                                                <span class="slider-value" id="bm25Weight-value">20%</span>
+                                            </div>
+                                            <div class="form-description">Weight for BM25 scoring</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Section -->
+                <div class="section" id="advanced-section" style="display: none;">
+                    <div class="section-header">
+                        <div class="section-title">Advanced Features</div>
+                    </div>
+                    <div class="section-content">
+                        <div class="section">
+                            <div class="section-header">
+                                <div class="section-title">Caching</div>
+                            </div>
+                            <div class="section-content">
+                                <div class="form-group">
+                                    <label class="form-label">Enable Caching</label>
+                                    <div class="form-description">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="cachingEnabled" checked>
+                                            <span class="slider-toggle"></span>
+                                        </label>
+                                        Enable caching for improved performance
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Cache Size</label>
+                                    <input type="number" class="form-control" id="cacheSize" value="1000" min="100" max="10000">
+                                    <div class="form-description">Maximum number of items to cache</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-header">
+                                <div class="section-title">Memory Management</div>
+                            </div>
+                            <div class="section-content">
+                                <div class="form-group">
+                                    <label class="form-label">GC Interval (ms)</label>
+                                    <input type="number" class="form-control" id="gcInterval" value="30000" min="1000" max="300000">
+                                    <div class="form-description">Garbage collection interval in milliseconds</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Templates Section -->
+                <div class="section" id="templates-section" style="display: none;">
+                    <div class="section-header">
+                        <div class="section-title">Configuration Templates</div>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label class="form-label">Load Template</label>
+                            <select class="form-control" id="templateSelect">
+                                <option value="">Select a template...</option>
+                                <option value="developer-workstation">Developer Workstation</option>
+                                <option value="enterprise-server">Enterprise Server</option>
+                                <option value="ci-cd-pipeline">CI/CD Pipeline</option>
+                                <option value="resource-constrained">Resource Constrained</option>
+                            </select>
+                            <div class="form-description">Load a pre-configured template for your use case</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button class="btn btn-primary" id="loadTemplateBtn">Load Selected Template</button>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-header">
+                                <div class="section-title">Template Descriptions</div>
+                            </div>
+                            <div class="section-content">
+                                <div class="form-group">
+                                    <strong>Developer Workstation</strong>
+                                    <p>Optimized for local development with moderate resource usage.</p>
+                                </div>
+                                <div class="form-group">
+                                    <strong>Enterprise Server</strong>
+                                    <p>Optimized for high-performance server environments with maximum resources.</p>
+                                </div>
+                                <div class="form-group">
+                                    <strong>CI/CD Pipeline</strong>
+                                    <p>Optimized for automated environments with fast processing and minimal output.</p>
+                                </div>
+                                <div class="form-group">
+                                    <strong>Resource Constrained</strong>
+                                    <p>Optimized for environments with limited CPU, memory, or storage.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="status-item">
+                    <span>●</span>
+                    <span>Configuration loaded</span>
+                </div>
+                <div class="status-item">
+                    <span>Last saved: Just now</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration state
+        let config = {
+            general: {
+                defaultProvider: 'ollama',
+                concurrency: 5,
+                batchSize: 100,
+                memoryLimit: 512
+            },
+            indexing: {
+                chunkSize: 4000,
+                overlapRatio: 15,
+                parallelWalk: {
+                    enabled: false,
+                    concurrency: 4
+                }
+            },
+            query: {
+                defaultResults: 8,
+                ranking: {
+                    bm25: {
+                        enabled: true,
+                        k1: 1.5,
+                        b: 0.75,
+                        weights: {
+                            vector: 0.7,
+                            bm25: 0.2,
+                            structural: 0.1
+                        }
+                    }
+                }
+            },
+            advanced: {
+                caching: {
+                    enabled: true,
+                    maxSize: 1000
+                },
+                memory: {
+                    gcInterval: 30000
+                }
+            }
+        };
+
+        // Initialize UI
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load configuration
+            loadConfig();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Initialize sliders
+            initializeSliders();
+        });
+
+        // Load configuration into UI
+        function loadConfig() {
+            // General settings
+            document.getElementById('defaultProvider').value = config.general.defaultProvider;
+            document.getElementById('concurrency').value = config.general.concurrency;
+            document.getElementById('concurrency-value').textContent = config.general.concurrency;
+            document.getElementById('batchSize').value = config.general.batchSize;
+            document.getElementById('batchSize-value').textContent = config.general.batchSize;
+            document.getElementById('memoryLimit').value = config.general.memoryLimit;
+            
+            // Indexing settings
+            document.getElementById('chunkSize').value = config.indexing.chunkSize;
+            document.getElementById('overlapRatio').value = config.indexing.overlapRatio;
+            document.getElementById('overlapRatio-value').textContent = config.indexing.overlapRatio + '%';
+            document.getElementById('parallelWalkEnabled').checked = config.indexing.parallelWalk.enabled;
+            document.getElementById('parallelWalkConcurrency').value = config.indexing.parallelWalk.concurrency;
+            document.getElementById('parallelWalkConcurrency-value').textContent = config.indexing.parallelWalk.concurrency;
+            
+            // Show/hide parallel walk settings
+            document.getElementById('parallelWalkSettings').style.display = 
+                config.indexing.parallelWalk.enabled ? 'block' : 'none';
+            
+            // Query settings
+            document.getElementById('defaultResults').value = config.query.defaultResults;
+            document.getElementById('defaultResults-value').textContent = config.query.defaultResults;
+            document.getElementById('bm25Enabled').checked = config.query.ranking.bm25.enabled;
+            document.getElementById('bm25K1').value = config.query.ranking.bm25.k1 * 10;
+            document.getElementById('bm25K1-value').textContent = config.query.ranking.bm25.k1;
+            document.getElementById('bm25B').value = config.query.ranking.bm25.b * 100;
+            document.getElementById('bm25B-value').textContent = config.query.ranking.bm25.b;
+            document.getElementById('vectorWeight').value = config.query.ranking.bm25.weights.vector * 100;
+            document.getElementById('vectorWeight-value').textContent = (config.query.ranking.bm25.weights.vector * 100) + '%';
+            document.getElementById('bm25Weight').value = config.query.ranking.bm25.weights.bm25 * 100;
+            document.getElementById('bm25Weight-value').textContent = (config.query.ranking.bm25.weights.bm25 * 100) + '%';
+            
+            // Advanced settings
+            document.getElementById('cachingEnabled').checked = config.advanced.caching.enabled;
+            document.getElementById('cacheSize').value = config.advanced.caching.maxSize;
+            document.getElementById('gcInterval').value = config.advanced.memory.gcInterval;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                });
+            });
+            
+            // Save button
+            document.getElementById('saveBtn').addEventListener('click', saveConfig);
+            
+            // Export button
+            document.getElementById('exportBtn').addEventListener('click', exportConfig);
+            
+            // Template loading
+            document.getElementById('loadTemplateBtn').addEventListener('click', loadTemplate);
+            
+            // Parallel walk toggle
+            document.getElementById('parallelWalkEnabled').addEventListener('change', function() {
+                document.getElementById('parallelWalkSettings').style.display = 
+                    this.checked ? 'block' : 'none';
+            });
+            
+            // Slider value updates
+            document.getElementById('concurrency').addEventListener('input', function() {
+                document.getElementById('concurrency-value').textContent = this.value;
+            });
+            
+            document.getElementById('batchSize').addEventListener('input', function() {
+                document.getElementById('batchSize-value').textContent = this.value;
+            });
+            
+            document.getElementById('overlapRatio').addEventListener('input', function() {
+                document.getElementById('overlapRatio-value').textContent = this.value + '%';
+            });
+            
+            document.getElementById('parallelWalkConcurrency').addEventListener('input', function() {
+                document.getElementById('parallelWalkConcurrency-value').textContent = this.value;
+            });
+            
+            document.getElementById('defaultResults').addEventListener('input', function() {
+                document.getElementById('defaultResults-value').textContent = this.value;
+            });
+            
+            document.getElementById('bm25K1').addEventListener('input', function() {
+                document.getElementById('bm25K1-value').textContent = (this.value / 10).toFixed(1);
+            });
+            
+            document.getElementById('bm25B').addEventListener('input', function() {
+                document.getElementById('bm25B-value').textContent = (this.value / 100).toFixed(2);
+            });
+            
+            document.getElementById('vectorWeight').addEventListener('input', function() {
+                document.getElementById('vectorWeight-value').textContent = this.value + '%';
+                // Update BM25 weight to maintain 100% total
+                const bm25Weight = 100 - this.value - 10; // 10% for structural
+                document.getElementById('bm25Weight').value = bm25Weight;
+                document.getElementById('bm25Weight-value').textContent = bm25Weight + '%';
+            });
+        }
+
+        // Initialize sliders with proper value display
+        function initializeSliders() {
+            // Update all slider value displays
+            const sliders = [
+                { id: 'concurrency', valueId: 'concurrency-value' },
+                { id: 'batchSize', valueId: 'batchSize-value' },
+                { id: 'overlapRatio', valueId: 'overlapRatio-value', suffix: '%' },
+                { id: 'parallelWalkConcurrency', valueId: 'parallelWalkConcurrency-value' },
+                { id: 'defaultResults', valueId: 'defaultResults-value' },
+                { id: 'bm25K1', valueId: 'bm25K1-value', divisor: 10 },
+                { id: 'bm25B', valueId: 'bm25B-value', divisor: 100 },
+                { id: 'vectorWeight', valueId: 'vectorWeight-value', suffix: '%' },
+                { id: 'bm25Weight', valueId: 'bm25Weight-value', suffix: '%' }
+            ];
+            
+            sliders.forEach(slider => {
+                const element = document.getElementById(slider.id);
+                const valueElement = document.getElementById(slider.valueId);
+                if (element && valueElement) {
+                    const value = slider.divisor ? (element.value / slider.divisor) : element.value;
+                    valueElement.textContent = value + (slider.suffix || '');
+                }
+            });
+        }
+
+        // Show specific section
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section[id$="-section"]').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`.nav-item[data-section="${sectionName}"]`).classList.add('active');
+            
+            // Update header title
+            const titles = {
+                'general': 'General Settings',
+                'indexing': 'Indexing Configuration',
+                'query': 'Query Processing',
+                'advanced': 'Advanced Features',
+                'templates': 'Configuration Templates'
+            };
+            document.querySelector('.header-title h2').textContent = titles[sectionName] || sectionName;
+        }
+
+        // Save configuration
+        function saveConfig() {
+            // Update config object with current UI values
+            config.general.defaultProvider = document.getElementById('defaultProvider').value;
+            config.general.concurrency = parseInt(document.getElementById('concurrency').value);
+            config.general.batchSize = parseInt(document.getElementById('batchSize').value);
+            config.general.memoryLimit = parseInt(document.getElementById('memoryLimit').value);
+            
+            config.indexing.chunkSize = parseInt(document.getElementById('chunkSize').value);
+            config.indexing.overlapRatio = parseInt(document.getElementById('overlapRatio').value);
+            config.indexing.parallelWalk.enabled = document.getElementById('parallelWalkEnabled').checked;
+            config.indexing.parallelWalk.concurrency = parseInt(document.getElementById('parallelWalkConcurrency').value);
+            
+            config.query.defaultResults = parseInt(document.getElementById('defaultResults').value);
+            config.query.ranking.bm25.enabled = document.getElementById('bm25Enabled').checked;
+            config.query.ranking.bm25.k1 = parseFloat(document.getElementById('bm25K1').value) / 10;
+            config.query.ranking.bm25.b = parseFloat(document.getElementById('bm25B').value) / 100;
+            config.query.ranking.bm25.weights.vector = parseFloat(document.getElementById('vectorWeight').value) / 100;
+            config.query.ranking.bm25.weights.bm25 = parseFloat(document.getElementById('bm25Weight').value) / 100;
+            
+            config.advanced.caching.enabled = document.getElementById('cachingEnabled').checked;
+            config.advanced.caching.maxSize = parseInt(document.getElementById('cacheSize').value);
+            config.advanced.memory.gcInterval = parseInt(document.getElementById('gcInterval').value);
+            
+            // Show success message
+            alert('Configuration saved successfully!');
+            
+            // Update status bar
+            document.querySelector('.status-bar .status-item span:last-child').textContent = 'Last saved: Just now';
+        }
+
+        // Export configuration
+        function exportConfig() {
+            const format = prompt('Export format (json, yaml, cli):', 'json');
+            if (!format) return;
+            
+            let exported;
+            switch (format.toLowerCase()) {
+                case 'json':
+                    exported = JSON.stringify(config, null, 2);
+                    break;
+                case 'yaml':
+                    exported = convertToYaml(config);
+                    break;
+                case 'cli':
+                    exported = convertToCliCommands(config);
+                    break;
+                default:
+                    alert('Unsupported format: ' + format);
+                    return;
+            }
+            
+            // Create download link
+            const blob = new Blob([exported], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ziri-config.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Convert to YAML (simplified)
+        function convertToYaml(obj, indent = 0) {
+            const spaces = '  '.repeat(indent);
+            let yaml = '';
+            
+            for (const [key, value] of Object.entries(obj)) {
+                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    yaml += `${spaces}${key}:\n`;
+                    yaml += convertToYaml(value, indent + 1);
+                } else if (Array.isArray(value)) {
+                    yaml += `${spaces}${key}:\n`;
+                    for (const item of value) {
+                        yaml += `${spaces}  - ${item}\n`;
+                    }
+                } else {
+                    yaml += `${spaces}${key}: ${JSON.stringify(value)}\n`;
+                }
+            }
+            
+            return yaml;
+        }
+
+        // Convert to CLI commands
+        function convertToCliCommands(config) {
+            const commands = [];
+            
+            // General settings
+            commands.push(`ziri config set general.defaultProvider "${config.general.defaultProvider}"`);
+            commands.push(`ziri config set general.concurrency ${config.general.concurrency}`);
+            commands.push(`ziri config set general.batchSize ${config.general.batchSize}`);
+            commands.push(`ziri config set general.memoryLimit ${config.general.memoryLimit}`);
+            
+            // Indexing settings
+            commands.push(`ziri config set indexing.chunkSize ${config.indexing.chunkSize}`);
+            commands.push(`ziri config set indexing.overlapRatio ${config.indexing.overlapRatio / 100}`);
+            commands.push(`ziri config set indexing.parallelWalk.enabled ${config.indexing.parallelWalk.enabled}`);
+            commands.push(`ziri config set indexing.parallelWalk.concurrency ${config.indexing.parallelWalk.concurrency}`);
+            
+            // Query settings
+            commands.push(`ziri config set query.defaultResults ${config.query.defaultResults}`);
+            commands.push(`ziri config set query.ranking.bm25.enabled ${config.query.ranking.bm25.enabled}`);
+            commands.push(`ziri config set query.ranking.bm25.k1 ${config.query.ranking.bm25.k1}`);
+            commands.push(`ziri config set query.ranking.bm25.b ${config.query.ranking.bm25.b}`);
+            commands.push(`ziri config set query.ranking.bm25.weights.vector ${config.query.ranking.bm25.weights.vector}`);
+            commands.push(`ziri config set query.ranking.bm25.weights.bm25 ${config.query.ranking.bm25.weights.bm25}`);
+            
+            // Advanced settings
+            commands.push(`ziri config set advanced.caching.enabled ${config.advanced.caching.enabled}`);
+            commands.push(`ziri config set advanced.caching.maxSize ${config.advanced.caching.maxSize}`);
+            commands.push(`ziri config set advanced.memory.gcInterval ${config.advanced.memory.gcInterval}`);
+            
+            return commands.join('\n');
+        }
+
+        // Load template
+        function loadTemplate() {
+            const templateName = document.getElementById('templateSelect').value;
+            if (!templateName) {
+                alert('Please select a template');
+                return;
+            }
+            
+            // Define templates
+            const templates = {
+                'developer-workstation': {
+                    general: {
+                        defaultProvider: 'ollama',
+                        concurrency: 4,
+                        batchSize: 100,
+                        memoryLimit: 512
+                    },
+                    indexing: {
+                        chunkSize: 4000,
+                        overlapRatio: 15,
+                        parallelWalk: {
+                            enabled: false,
+                            concurrency: 4
+                        }
+                    },
+                    query: {
+                        defaultResults: 8,
+                        ranking: {
+                            bm25: {
+                                enabled: true,
+                                k1: 1.5,
+                                b: 0.75,
+                                weights: {
+                                    vector: 0.7,
+                                    bm25: 0.2,
+                                    structural: 0.1
+                                }
+                            }
+                        }
+                    }
+                },
+                'enterprise-server': {
+                    general: {
+                        defaultProvider: 'openai',
+                        concurrency: 10,
+                        batchSize: 200,
+                        memoryLimit: 2048
+                    },
+                    indexing: {
+                        chunkSize: 5000,
+                        overlapRatio: 20,
+                        parallelWalk: {
+                            enabled: true,
+                            concurrency: 8
+                        }
+                    },
+                    query: {
+                        defaultResults: 15,
+                        ranking: {
+                            bm25: {
+                                enabled: true,
+                                k1: 1.2,
+                                b: 0.75,
+                                weights: {
+                                    vector: 0.6,
+                                    bm25: 0.3,
+                                    structural: 0.1
+                                }
+                            }
+                        }
+                    },
+                    advanced: {
+                        caching: {
+                            enabled: true,
+                            maxSize: 5000
+                        },
+                        memory: {
+                            gcInterval: 15000
+                        }
+                    }
+                }
+            };
+            
+            if (templates[templateName]) {
+                config = { ...config, ...templates[templateName] };
+                loadConfig();
+                alert(`Template "${templateName}" loaded successfully!`);
+            } else {
+                alert(`Template "${templateName}" not found`);
+            }
+        }
+    </script>
+</body>
+</html>

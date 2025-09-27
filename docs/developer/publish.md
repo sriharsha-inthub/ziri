@@ -32,7 +32,7 @@ npm version patch
 ```
 
 This will:
-- Bump version from current (e.g., `0.1.9` → `0.1.10`)
+- Bump version from current (e.g., `{{VERSION_RANGE}}`)
 - Create a git commit with the version change
 - Create a git tag (e.g., `v0.1.10`)
 

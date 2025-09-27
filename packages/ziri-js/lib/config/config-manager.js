@@ -148,7 +148,13 @@ export class ConfigManager {
    * Save configuration to file
    */
   async saveConfig(config) {
-    this._config = config;
+    // Ensure the config has a version number
+    const configToSave = {
+      version: '1.0.0',
+      ...config
+    };
+    
+    this._config = configToSave;
     
     // Ensure config directory exists
     const configDir = join(this.baseDirectory, 'config');
@@ -159,7 +165,7 @@ export class ConfigManager {
       await mkdir(configDir, { recursive: true });
     }
 
-    await writeFile(this.configPath, JSON.stringify(config, null, 2));
+    await writeFile(this.configPath, JSON.stringify(configToSave, null, 2));
   }
 
   /**
@@ -275,7 +281,7 @@ export class ConfigManager {
           type: 'ollama',
           baseUrl: 'http://localhost:11434',
           model: 'nomic-embed-text',
-          textModel: 'llama3.2',
+          textModel: 'qwen2:1.5b',
           dimensions: 768,
           enabled: true,
           rateLimit: {
@@ -313,15 +319,15 @@ export class ConfigManager {
       },
       performance: {
         concurrency: 3,
-        batchSize: 100,
-        memoryLimit: 512,
-        chunkSize: 1000,
-        chunkOverlap: 200,
+        batchSize: 150,
+        memoryLimit: 1024,
+        chunkSize: 750,
+        chunkOverlap: 150,
         maxFileSize: 1024 * 1024, // 1MB
         adaptiveBatching: true,
         cache: {
           enabled: true,
-          maxSize: 100,
+          maxSize: 200,
           ttl: 3600,
           type: 'memory'
         }
@@ -505,11 +511,22 @@ export class ConfigManager {
       throw new Error(`Provider '${name}' not found`);
     }
     
+    // Check if this is the default provider
     if (config.defaultProvider === name) {
-      throw new Error(`Cannot remove default provider '${name}'. Switch to another provider first.`);
+      // Check if we have other providers we can switch to
+      const otherProviders = Object.keys(config.providers).filter(p => p !== name);
+      if (otherProviders.length > 0) {
+        // Switch to the first available provider
+        config.defaultProvider = otherProviders[0];
+        console.log(`Switched default provider from '${name}' to '${otherProviders[0]}'`);
+      } else {
+        throw new Error(`Cannot remove default provider '${name}' - no other providers available. Add another provider first.`);
+      }
     }
     
+    console.log(`Before deletion: ${JSON.stringify(config.providers)}`);
     delete config.providers[name];
+    console.log(`After deletion: ${JSON.stringify(config.providers)}`);
     await this.saveConfig(config);
     
     return { success: true };
@@ -549,26 +566,43 @@ export class ConfigManager {
    */
   getPerformanceRecommendations() {
     const recommendations = {
-      concurrency: 3,
-      batchSize: 100,
-      memoryLimit: 512,
+      concurrency: 5,
+      batchSize: 150,
+      memoryLimit: 1024,
+      chunkSize: 750,
+      chunkOverlap: 150,
       reasoning: []
     };
     
     // Basic system detection (could be enhanced with actual system info)
     const totalMemory = process.memoryUsage().heapTotal / 1024 / 1024; // MB
     
-    if (totalMemory > 1024) {
+    if (totalMemory > 2048) { // High-end systems (16GB+ RAM)
+      recommendations.concurrency = 8;
+      recommendations.batchSize = 200;
+      recommendations.memoryLimit = 2048;
+      recommendations.chunkSize = 1000;
+      recommendations.reasoning.push('High-end system detected - maximized concurrency and chunk size for best performance');
+    } else if (totalMemory > 1024) { // Mid-range systems (8GB+ RAM)
       recommendations.concurrency = 5;
       recommendations.batchSize = 150;
       recommendations.memoryLimit = 1024;
-      recommendations.reasoning.push('High memory system detected - increased concurrency and batch size');
-    } else if (totalMemory < 512) {
+      recommendations.chunkSize = 750;
+      recommendations.reasoning.push('Mid-range system detected - balanced settings for optimal performance');
+    } else if (totalMemory < 512) { // Low-end systems (<4GB RAM)
       recommendations.concurrency = 2;
       recommendations.batchSize = 50;
       recommendations.memoryLimit = 256;
-      recommendations.reasoning.push('Low memory system detected - reduced concurrency and batch size');
+      recommendations.chunkSize = 500;
+      recommendations.chunkOverlap = 100;
+      recommendations.reasoning.push('Low-end system detected - reduced settings for memory efficiency');
+    } else {
+      recommendations.reasoning.push('Standard system detected - using optimized default settings');
     }
+    
+    // Add chunk size optimization reasoning
+    recommendations.reasoning.push('Smaller chunk size (750) improves indexing speed and search precision');
+    recommendations.reasoning.push('Reduced overlap (150) maintains context while minimizing redundancy');
     
     return recommendations;
   }
@@ -775,13 +809,13 @@ export class ConfigManager {
       
       // Check if required models are available
       const hasEmbeddingModel = models.some(m => 
-        m.name.includes('nomic-embed-text') || 
+        m.name.includes('all-minilm') || 
         m.name.includes('embed')
       );
       
       const hasTextModel = models.some(m => 
-        m.name.includes('llama3.2') || 
-        (!m.name.includes('embed') && !m.name.includes('nomic'))
+        m.name.includes('qwen2') || 
+        (!m.name.includes('embed') && !m.name.includes('all-minilm'))
       );
 
       if (models.length === 0) {
@@ -789,8 +823,8 @@ export class ConfigManager {
           available: false,
           error: 'No models found in Ollama',
           suggestions: [
-            'Pull embedding model: ollama pull nomic-embed-text',
-            'Pull text model: ollama pull llama3.2',
+            'Pull embedding model: ollama pull all-minilm:latest',
+            'Pull text model: ollama pull qwen2:1.5b',
             'List available models: ollama list'
           ]
         };
@@ -812,8 +846,8 @@ export class ConfigManager {
           available: false,
           error: 'No text generation model found in Ollama',
           suggestions: [
-            'Pull text model: ollama pull llama3.2',
-            'Alternative: ollama pull llama3.1'
+            'Pull text model: ollama pull qwen2:1.5b',
+            'Alternative: ollama pull llama3.2'
           ]
         };
       }

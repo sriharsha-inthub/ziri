@@ -4,12 +4,12 @@ import { EmbedCache } from './embed_cache.js';
 export function makeEmbedder(kind, config = {}){
   if (kind==='openai') return create('openai', embedOpenAI, 'text-embedding-3-small');
   if (kind==='ollama' || !kind) {
-    // Use configured embedding model or default to all-minilm for better performance
+    // Use configured embedding model or default to nomic-embed-text for better quality
     const ollamaConfig = config.providers?.ollama || {};
-    const embeddingModel = ollamaConfig.embeddingModel || 'all-minilm';
+    const embeddingModel = ollamaConfig.embeddingModel || 'nomic-embed-text';
     return create('ollama', embedOllama, embeddingModel);
   }
-  return create('ollama', embedOllama, 'all-minilm'); // Default to faster model
+  return create('ollama', embedOllama, 'nomic-embed-text'); // Default to higher quality model
 }
 function create(id, fn, model){
   const cache = new EmbedCache(id+':'+model);

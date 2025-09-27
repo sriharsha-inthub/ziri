@@ -31,22 +31,30 @@ ziri doctor
 ## Quick Start
 
 ```bash
-# Setup Ollama (recommended - local, free)
-# Download from: https://ollama.ai/download
-ollama pull all-minilm && ollama pull llama3.2
-
-# Index your current repository with enhanced context
+# Index your repository with enhanced context (default)
 ziri index
 
-# Query your codebase with rich results
+# Query with rich results
 ziri query "authentication logic"
 
 # Chat with AI using your codebase context
-ziri chat "how does the authentication system work?"
+ziri chat "how does the user login system work?"
 
-# Check system health and Ollama status
+# Check system health
 ziri doctor
 ```
+
+## Version Information
+
+**Current Version**: v0.2.1
+
+Ziri has evolved from a beta release to a stable version with enhanced features and improved reliability. Key improvements in v0.2.1 include:
+
+- Enhanced code analysis for multiple programming languages
+- Better error handling and resilience
+- Improved performance and memory optimization
+- More accurate metadata extraction
+- Enhanced documentation and examples
 
 ## Commands
 
@@ -168,12 +176,64 @@ ollama pull qwen2:1.5b-q4_0
 ```bash
 # Install Ollama: https://ollama.ai/download
 # Pull required models
-ollama pull all-minilm         # For embeddings (fast, default)
+ollama pull nomic-embed-text   # For embeddings (high quality, default)
+ollama pull all-minilm         # Alternative (faster, lower quality)
 ollama pull llama3.2           # For chat generation
 
 # Configure Ziri (automatic if Ollama is running)
 ziri config provider ollama
 ```
+
+### `ziri lsp [options]` ⭐ NEW
+
+Start the Language Server Protocol (LSP) server for IDE integration.
+
+**How it works:**
+1. Implements the Language Server Protocol standard
+2. Integrates with Ziri's semantic search and indexing capabilities
+3. Provides real-time code assistance within IDEs
+4. Supports hover, definition, and workspace symbol features
+
+**Options:**
+- `--stdio` - Use stdio for communication (default for most IDEs)
+- `--socket <port>` - Use socket for communication
+- `--node-ipc` - Use node-ipc for communication
+
+**Supported LSP Features:**
+- **Hover Provider**: Shows code context and explanations on mouseover
+- **Definition Provider**: Jump to definition functionality for code elements
+- **Workspace Symbol Search**: Search for symbols across the entire codebase
+
+**Examples:**
+```bash
+# Start LSP server (typically started by IDE)
+ziri lsp
+
+# Start with socket communication
+ziri lsp --socket 8080
+
+# Start with node-ipc communication
+ziri lsp --node-ipc
+```
+
+**IDE Integration:**
+The LSP server can be integrated with any IDE that supports Language Server Protocol:
+- **VS Code**: Install the Ziri extension or configure manually
+- **Vim/Neovim**: Use coc.nvim or native LSP client
+- **Emacs**: Use lsp-mode
+- **Sublime Text**: Use LSP package
+- **Atom**: Use atom-ide packages
+
+**Benefits:**
+- Seamless integration with popular IDEs
+- Real-time code assistance within the development environment
+- Broader tool ecosystem compatibility
+- Enhanced developer workflow without leaving the IDE
+
+**Requirements:**
+- Repository must be indexed with `ziri index` first
+- Ziri configuration properly set up
+- IDE with LSP client support
 
 ### `ziri config <command> [options]`
 
@@ -184,6 +244,21 @@ Manage Ziri configuration.
 - `set <key> <value>` - Set configuration value
 - `provider <name> [options]` - Configure embedding provider
 - `reset` - Reset configuration to defaults
+- `security <subcommand> [options]` - Manage encryption of stored data (new)
+
+**Security Sub‑commands:**
+```bash
+# Enable encryption (requires a passphrase)
+ziri config security enable <passphrase>
+
+# Disable encryption (stores data unencrypted)
+ziri config security disable
+
+# Show current encryption status
+ziri config security status
+```
+
+Enabling encryption stores vectors and chunk metadata using AES‑256‑GCM. The passphrase is never written to disk; it is cached only for the current session. Disabling encryption removes the encryption layer but does **not** automatically re‑encrypt existing data – you must re‑index to apply the new setting.
 
 **Provider Configuration:**
 ```bash
@@ -207,29 +282,21 @@ ziri config provider cohere --api-key your-cohere-key
 ```
 
 **Model Configuration:**
-
-Ziri supports configurable models for both embedding and text generation:
-
 ```bash
 # Embedding Models (for indexing and search)
-# Default: all-minilm (fast, good quality)
-ziri config provider ollama --embedding-model all-minilm          # Fast, recommended
-ziri config provider ollama --embedding-model nomic-embed-text   # Slower, higher quality
+# Default: nomic-embed-text (high quality)
+ziri config provider ollama --embedding-model nomic-embed-text   # High quality, recommended (default)
+ziri config provider ollama --embedding-model all-minilm         # Faster, lower quality
 
 # Text Generation Models (for chat)
 # Default: llama3.2
 ziri config provider ollama --text-model llama3.2               # Balanced performance
 ziri config provider ollama --text-model llama3.1              # Alternative option
-
-# Pull required models first:
-ollama pull all-minilm        # Fast embedding model (default)
-ollama pull nomic-embed-text  # High-quality embedding model
-ollama pull llama3.2          # Chat model (default)
 ```
 
 **Performance Recommendations:**
-- **Fast indexing**: Use `all-minilm` embedding model (~25MB, 5-10x faster)
-- **High quality**: Use `nomic-embed-text` embedding model (~311MB, slower but more accurate)
+- **High quality**: Use `nomic-embed-text` embedding model (~274 MB, recommended default)
+- **Fast indexing**: Use `all-minilm` embedding model (~45 MB, 6× faster but lower quality)
 - **Chat performance**: Ensure Ollama has GPU acceleration for best results
 
 **General Configuration:**
@@ -247,68 +314,216 @@ ziri config set indexing.enhancedContext true
 ziri config set indexing.includeMetadata true
 ```
 
-### `ziri sources <command> [options]`
+---
+### Additional Indexer Flags (Advanced)
 
-Manage source repositories.
+The indexer also supports two advanced flags that are not listed in the basic documentation:
+- `--parallel` – Enable the parallel file‑system walker for faster repository scans (uses `filesystem/parallel-walk.js`).
+- `--walk-concurrency <num>` – Number of parallel walkers when `--parallel` is enabled (default: `4`).
 
-**Commands:**
-- `add <path> [--set NAME]` - Add repository to sources
-- `list` - List all source repositories
-- `remove <path>` - Remove repository from sources
-
-**Examples:**
+Example of using these flags:
 ```bash
-# Add current directory to default set
-ziri sources add .
-
-# Add repository to specific set
-ziri sources add /path/to/repo --set backend
-
-# List all sources
-ziri sources list
-
-# Remove repository
-ziri sources remove /path/to/repo
+ziri index --parallel --walk-concurrency 8 --provider ollama --concurrency 6
 ```
 
-### `ziri benchmark [options]`
+---
+### MCP (Model‑Context‑Protocol) support & tool‑call documentation
 
-Run performance benchmarks to optimize settings.
+Ziri implements the **core building blocks** required for a Model‑Context‑Protocol (MCP) integration.  The MCP concept is a lightweight protocol that lets an LLM request *tool calls* (e.g., embed, index, query, chat) and receive structured results.  Ziri does not expose a dedicated HTTP endpoint yet, but the **CLI**, **LSP server**, and **VS Code extension** together provide a fully‑functional MCP‑compatible surface.
 
-**Options:**
-- `--providers <list>` - Comma-separated list of providers to benchmark
-- `--duration <seconds>` - Benchmark duration in seconds (default: 60)
-- `--output <file>` - Save results to JSON file
+#### 1️⃣ Available tool calls (high‑level operations)
+| Tool name | Underlying implementation | Typical use‑case |
+|-----------|--------------------------|-----------------|
+| `embed` | `makeEmbedder` → `embedOpenAI` / `embedOllama` | Convert raw text (or code chunks) into a vector embedding. |
+| `index` | `enhancedLegacyIndexCommand` (walk → chunk → embed → `store_repo.saveChunk`) | Build or update the per‑repo vector store with rich metadata. |
+| `query` | `queryCommand` (embed query → similarity search → `EnhancedStorage.loadEnhancedChunk`) | Retrieve the *k* most relevant code chunks with full context. |
+| `chat` | `chatCommand` (query → context → LLM completion) | Ask natural‑language questions about the codebase; Ziri automatically supplies relevant snippets. |
+| `watch` | `watchCommand` (fs events → incremental `index`) | Keep the index up‑to‑date while you develop. |
+| `lsp` | `lspCommand` (Language‑Server‑Protocol) | Exposes the above tools over LSP so any IDE can act as an MCP client. |
 
-**Examples:**
-```bash
-# Benchmark default providers
-ziri benchmark
-
-# Compare specific providers
-ziri benchmark --providers openai,ollama,huggingface --duration 120
-
-# Save results for analysis
-ziri benchmark --output benchmark-results.json
+#### 2️⃣ Call sequence for a typical **query** operation
+```
+1. ziri query "<text>"
+   └─ CLI parses args → selects provider (default Ollama).
+2. makeEmbedder() creates an embedder instance.
+3. embedBatch([query]) → vector for the query.
+4. readIndex() loads the repository index.
+5. For each indexed chunk: loadVector() → cosineSim(queryVec, chunkVec).
+6. TopK(k) keeps the highest‑scoring IDs.
+7. EnhancedStorage.loadEnhancedChunk() loads full metadata (code, language, function name, surrounding lines).
+8. createEnhancedQueryResult() builds a rich result object.
+9. Result is printed (human‑readable) or emitted as JSON (`--json`).
 ```
 
-### `ziri doctor`
+#### 3️⃣ JSON schema for LLM‑driven tool calls (OpenAI‑compatible `function` definitions)
+```json
+[
+  {
+    "name": "embed",
+    "description": "Generate vector embeddings for a list of texts.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "texts": { "type": "array", "items": { "type": "string" } },
+        "model": { "type": "string", "enum": ["nomic-embed-text","all-minilm","text-embedding-3-small"] }
+      },
+      "required": ["texts"]
+    }
+  },
+  {
+    "name": "index",
+    "description": "Index a repository (or a set of repositories) with enhanced context.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "Absolute path to the repository root." },
+        "set": { "type": "string", "description": "Optional source‑set name (as defined via `ziri sources`)." },
+        "force": { "type": "boolean", "default": false },
+        "parallel": { "type": "boolean", "default": false },
+        "walkConcurrency": { "type": "integer", "minimum": 1, "default": 4 }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "query",
+    "description": "Search indexed code for the most relevant chunks.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": { "type": "string" },
+        "k": { "type": "integer", "minimum": 1, "default": 8 },
+        "scope": { "type": "string", "enum": ["repo","all","set"] },
+        "set": { "type": "string" }
+      },
+      "required": ["query"]
+    }
+  },
+  {
+    "name": "chat",
+    "description": "Ask a natural‑language question about the codebase; Ziri will retrieve context and generate a response.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "k": { "type": "integer", "minimum": 1, "default": 8 },
+        "scope": { "type": "string", "enum": ["repo","all","set"] },
+        "verbose": { "type": "boolean", "default": false }
+      },
+      "required": ["question"]
+    }
+  }
+]
+```
+*These definitions can be passed to the OpenAI `functions` parameter (or any LLM that supports function calling).  The LLM will then invoke the appropriate Ziri CLI command behind the scenes.*
 
-Check system health and configuration.
+#### 4️⃣ Using the LSP server as an MCP endpoint
+The **LSP server** (`ziri lsp`) implements three custom requests that map directly to the tool calls above:
+```json
+// Request IDs (sent over LSP JSON‑RPC)
+"ziri/embed"   → embed(texts, model?)
+"ziri/index"   → index(path, options)
+"ziri/query"   → query(query, k?, scope?)
+"ziri/chat"    → chat(question, k?, scope?, verbose?)
+```
+Any LSP‑compatible editor (VS Code, Neovim, Emacs, etc.) can call these methods, making the editor itself an MCP client.  The bundled **Ziri VS Code extension** already uses this mechanism under the hood.
 
-Displays:
-- Source repository status
-- Provider configuration and API key status
-- Performance settings
-- Storage locations
-- Optimization recommendations
+#### 5️⃣ Configuring defaults (all are already set in code)
+| Setting | Default (see `ConfigManager.getDefaultConfig()`) |
+|---------|-----------------------------------------------|
+| `defaultProvider` | `ollama` |
+| Ollama embedding model | `nomic-embed-text` |
+| Ollama text model | `qwen2:1.5b` |
+| Concurrency | `5` |
+| Batch size | `150` |
+| Memory limit (MB) | `1024` |
+| Chunk size (tokens) | `750` |
+| Chunk overlap (tokens) | `150` |
+| Exclusions | Git, `node_modules`, binary extensions, etc. |
+| Encryption (optional) | Disabled by default; enable via `ziri config security enable <passphrase>` |
 
-### `ziri where`
+All of these defaults are applied automatically when Ziri is first run; they can be overridden with `ziri config set …` or via environment variables (e.g., `ZIRI_OPENAI_API_KEY`).
 
-Show Ziri storage locations and paths.
+#### 6️⃣ Quick MCP demo (CLI)
+```bash
+# 1️⃣ Index the repo (once)
+ziri index
 
-For complete configuration details, see the [Configuration Guide](configuration.md).
+# 2️⃣ Query via MCP‑style JSON (using jq for pretty‑print)
+ziri query "authentication" --json | jq
 
-For troubleshooting help, see the [Troubleshooting Guide](troubleshooting.md).
+# 3️⃣ Chat with context (MCP‑style)
+ziri chat "How does the login flow work?" --verbose
+```
+The same calls can be made from an LLM by sending the JSON function definitions above; the LLM will receive the rich result objects that contain:
+- `score`
+- `file` & `lines`
+- `language`
+- `functionName` / `className`
+- `context` (actual code snippet)
+- `surroundingLines` (before/after context)
+- `metadata.syntaxInfo`
+- `relevanceExplanation`
 
-For practical examples, see the [Usage Examples](usage-examples.md).
+#### 7️⃣ Next steps for a full MCP server
+If you need a dedicated HTTP/JSON‑RPC endpoint, you can wrap the existing commands:
+```js
+import { exec } from 'child_process';
+
+export async function handleMcpRequest(method, params) {
+  switch (method) {
+    case 'embed':
+      return execAsync(`ziri embed "${params.texts.join('\n')}" --model ${params.model||'nomic-embed-text'}`);
+    case 'index':
+      return execAsync(`ziri index ${params.path} ${params.force?'--force':''}`);
+    case 'query':
+      return execAsync(`ziri query "${params.query}" --k ${params.k||8} ${params.scope?'--scope '+params.scope:''}`);
+    case 'chat':
+      return execAsync(`ziri chat "${params.question}" --k ${params.k||8} ${params.verbose?'--verbose':''}`);
+    default:
+      throw new Error('Unsupported MCP method: '+method);
+  }
+}
+```
+Expose `handleMcpRequest` via Express, Fastify, or any server‑less platform to get a **standard MCP endpoint**.
+
+---
+
+### Supported repository language types
+
+Ziri detects the programming language of each file based on its extension.  The detection table below is used by `store_repo.inferLanguage` and by the AST analyzers to enrich chunk metadata.
+
+| Language | Extensions |
+|----------|------------|
+| JavaScript / TypeScript | `.js`, `.jsx`, `.ts`, `.tsx` |
+| Python | `.py` |
+| Java | `.java` |
+| C / C++ | `.c`, `.cpp`, `.h`, `.hpp` |
+| C# | `.cs` |
+| PHP | `.php` |
+| Ruby | `.rb` |
+| Go | `.go` |
+| Rust | `.rs` |
+| Swift | `.swift` |
+| Kotlin | `.kt` |
+| Scala | `.scala` |
+| Shell / scripting | `.sh`, `.bash`, `.zsh`, `.fish`, `.ps1` |
+| SQL | `.sql` |
+| HTML / CSS / SCSS / SASS / LESS | `.html`, `.css`, `.scss`, `.sass`, `.less` |
+| JSON / YAML / TOML / INI / Config | `.json`, `.yaml`, `.yml`, `.toml`, `.ini`, `.cfg`, `.conf` |
+| Markdown / Text | `.md`, `.txt` |
+| XML | `.xml` |
+| Other | Any unknown extension falls back to `unknown` |
+
+In addition to generic language detection, Ziri ships **AST analyzers** for several domain‑specific languages.  These analyzers extract richer metadata (functions, classes, imports, docstrings, etc.) when the file type is recognized.
+
+| DSL / Domain | Analyzer file |
+|--------------|----------------|
+| Mulesoft | `metadata/mulesoft-ast-analyzer.js` |
+| Message Flow (msgflow) | `metadata/msgflow-ast-analyzer.js` |
+| DataWeave (dwl) | `metadata/dwl-ast-analyzer.js` |
+| ESQL | `metadata/esql-ast-analyzer.js` |
+| XML | `metadata/xml-ast-analyzer.js` |
+| General code (fallback) | `metadata/code-analyzer.js` |
+
+These analyzers are automatically invoked by the indexer when a file’s extension matches one of the supported languages.  If no specific analyzer exists, the generic `code-analyzer` provides basic token‑level information.

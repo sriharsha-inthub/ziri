@@ -31,6 +31,9 @@ ziri chat "how does the user login system work?"
 - **Multiple Providers** - Ollama (default), OpenAI, Hugging Face, Cohere
 - **Memory Optimized** - Handle large repositories without crashes
 - **Repository Isolation** - Per-repo vector stores with no cross-contamination
+- **Multi-Language Support** - Enhanced analysis for JavaScript, TypeScript, Python, Java, Dart, YAML, ESQL, DataWeave, Mulesoft, and more
+- **Advanced AST Analysis** - Deep code structure understanding with function, class, and import extraction
+- **Error Resilience** - Graceful handling of malformed code and API failures
 
 ## 📊 Performance
 
@@ -100,6 +103,8 @@ ziri doctor
 - **Language Detection**: Syntax highlighting and language-aware processing
 - **AI Chat**: Local Ollama integration for contextual code assistance
 - **Better Relevance**: Improved explanations of why results match your query
+- **Multi-Language Support**: Enhanced analysis for 10+ programming languages
+- **AST-Based Analysis**: Deep code understanding through Abstract Syntax Trees
 
 ### Migration from Legacy
 ```bash
@@ -109,6 +114,25 @@ ziri index                    # Uses enhanced context
 # Legacy mode (deprecated, will be removed in v2.0)
 ziri index --legacy          # Old indexing method
 ```
+
+## 🛠️ Recent Improvements (v0.2.1)
+
+### Enhanced Code Analysis
+- **Improved AST Parsing**: Better handling of complex language constructs
+- **Multi-Language Support**: Enhanced analyzers for Dart, YAML, IBM ACE, Mulesoft, and more
+- **Regex Pattern Fixes**: Resolved issues with import and function extraction across languages
+- **Type Detection**: More accurate classification of code elements
+
+### Performance & Reliability
+- **Memory Optimization**: Better handling of large repositories
+- **Error Handling**: Improved resilience to API failures and malformed code
+- **Batch Processing**: More efficient embedding generation
+- **Incremental Indexing**: Faster updates with intelligent change detection
+
+### Developer Experience
+- **Better Documentation**: Updated guides and examples
+- **Enhanced Testing**: More comprehensive test coverage
+- **Configuration Management**: Improved provider switching and validation
 
 ## 🆘 Need Help?
 

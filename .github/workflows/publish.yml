@@ -31,10 +31,11 @@ jobs:
       - name: Configure npm authentication
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
-      - name: Install dependencies
+      - name: Fix npm optional dependencies bug
         run: |
           cd packages/ziri-js
-          npm ci
+          rm -rf node_modules package-lock.json
+          npm install
 
       - name: Bump version (patch)
         run: |

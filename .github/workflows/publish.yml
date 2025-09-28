@@ -26,8 +26,10 @@ jobs:
       - name: Configure npm authentication
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
-      - name: Install dependencies (root)
-        run: npm ci
+      - name: Install dependencies
+        run: |
+          cd packages/ziri-js
+          npm ci
 
       - name: Bump version (patch)
         run: |
